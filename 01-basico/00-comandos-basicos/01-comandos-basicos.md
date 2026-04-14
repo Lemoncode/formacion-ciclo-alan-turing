@@ -94,7 +94,7 @@ docker run -it ubuntu bash
 > **Opciones interactivas:**
 >
 > - `-i`: Mantiene el STDIN abierto.
-> - `-t`: Asigna un seudo-TTY (terminal interactiva).
+> - `-t`: Asigna un pseudo-TTY (terminal interactiva).
 >
 > **Nota:** `docker run` descarga la imagen de `ubuntu` de forma automática al no encontrarla en local, aunque no hayamos hecho `docker pull` previamente.
 

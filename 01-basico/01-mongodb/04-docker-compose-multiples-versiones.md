@@ -67,7 +67,7 @@ docker exec mi-servidor-mflix mongorestore --db sample_mflix /tmp/m-flix
 
 ## 4. Evolucionando el entorno: Proyecto heredado (Airbnb)
 
-Ahora viene el escenario crítico. Empiezas a trabajar simultáneamente en el proyecto heredado de reservas de pisos de Airbnb. Te avisan que su software fallará catastróficamente si recibe algo superior a **MongoDB 4.4** debido a ciertas querys de backcompatibilidad.
+Ahora viene el escenario crítico. Empiezas a trabajar simultáneamente en el proyecto heredado de reservas de pisos de Airbnb. Te avisan que su software fallará catastróficamente si recibe algo superior a **MongoDB 4.4** debido a ciertas queries de backcompatibilidad.
 
 Con instalaciones de SO tradicional esto sería un quebradero de cabeza; borrar, reinstalar y limpiar variables de entorno (o arriesgarse a solapamientos).
 
@@ -113,7 +113,7 @@ docker exec mi-servidor-airbnb mongorestore --db sample_airbnb /tmp/airbnb
 Abre tu cliente **MongoDB Compass** para ver el milagro de coexistencia:
 
 1. **Servidor M-Flix (Versión 8):** Conéctate a `mongodb://localhost:27017`. Verás la base de datos `sample_mflix` con su información.
-2. **Servidor Airbnb (Versión 4.4):** Haz clic en el botón '+' para una nueva conexión e introduce `mongodb://localhost:27018`. Verás que entras a otra instancia completamente separada donde esta la base de datos `sample_airbnb`.
+2. **Servidor Airbnb (Versión 4.4):** Haz clic en el botón '+' para una nueva conexión e introduce `mongodb://localhost:27018`. Verás que entras a otra instancia completamente separada donde está la base de datos `sample_airbnb`.
 
 ## 6. Detener el entorno completo
 

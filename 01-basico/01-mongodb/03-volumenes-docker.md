@@ -6,7 +6,7 @@ La solución recomendada por Docker para persistir datos más allá del ciclo de
 
 ## 1. Crear un volumen en Docker
 
-Primero, vamos a crear un espacio de almacenamiento gestionado por Docker en nuestra máquina host (tu ordenador). Éste espacio actuará como un disco duro externo virtual.
+Primero, vamos a crear un espacio de almacenamiento gestionado por Docker en nuestra máquina host (tu ordenador). Este espacio actuará como un disco duro externo virtual.
 
 ```bash
 docker volume create mi-volumen-mongo
