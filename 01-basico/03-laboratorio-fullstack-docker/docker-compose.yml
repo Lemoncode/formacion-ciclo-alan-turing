@@ -1,0 +1,20 @@
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: seriesrank123
+      MYSQL_DATABASE: seriesrank
+    ports:
+      - "3306:3306"
+    volumes:
+      - seriesrank-data:/var/lib/mysql
+      - ./app/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pseriesrank123"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  seriesrank-data:
