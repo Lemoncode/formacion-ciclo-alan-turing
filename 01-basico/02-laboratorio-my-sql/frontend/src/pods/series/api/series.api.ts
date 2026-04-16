@@ -1,8 +1,3 @@
-// api/series.api.ts
-// Capa de acceso a datos — todas las llamadas HTTP de este pod.
-// Las URLs son relativas: el proxy del dev server de Astro redirige
-// /api/* → http://localhost:3000/api/*
-
 import type { SeriesApiModel } from "./series.api-model";
 
 const BASE = "/api";

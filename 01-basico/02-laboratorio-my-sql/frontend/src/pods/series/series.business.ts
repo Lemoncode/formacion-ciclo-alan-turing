@@ -1,7 +1,3 @@
-// series.business.ts
-// Lógica de negocio pura — sin framework, sin DOM, sin fetch.
-// Funciones fácilmente testeables de forma unitaria.
-
 import type { Series } from "./series.model";
 
 export function sortByVotes(series: Series[]): Series[] {
