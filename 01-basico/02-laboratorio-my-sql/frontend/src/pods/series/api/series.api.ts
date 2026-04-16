@@ -2,23 +2,23 @@ import type { SeriesApiModel } from "./series.api-model";
 
 const BASE = "/api";
 
-export async function fetchSeries(): Promise<SeriesApiModel[]> {
+export const fetchSeries = async (): Promise<SeriesApiModel[]> => {
   const res = await fetch(`${BASE}/series`);
   if (!res.ok) throw new Error(`Error ${res.status} al cargar series`);
   return res.json() as Promise<SeriesApiModel[]>;
-}
+};
 
-export async function voteSeries(id: number): Promise<SeriesApiModel> {
+export const voteSeries = async (id: number): Promise<SeriesApiModel> => {
   const res = await fetch(`${BASE}/series/${id}/vote`, { method: "POST" });
   if (!res.ok) throw new Error(`Error ${res.status} al votar`);
   return res.json() as Promise<SeriesApiModel>;
-}
+};
 
-export async function addSeries(
+export const addSeries = async (
   title: string,
   genre: string | null,
   year: number | null,
-): Promise<SeriesApiModel> {
+): Promise<SeriesApiModel> => {
   const res = await fetch(`${BASE}/series`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -29,4 +29,4 @@ export async function addSeries(
     throw new Error(data.error ?? `Error ${res.status}`);
   }
   return res.json() as Promise<SeriesApiModel>;
-}
+};

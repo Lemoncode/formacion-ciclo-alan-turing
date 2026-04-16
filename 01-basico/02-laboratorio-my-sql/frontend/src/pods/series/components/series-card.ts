@@ -9,11 +9,11 @@ const GENRE_CLASSES = [
   "text-[#ff6b35] border-[#ff6b3540] bg-[#ff6b3510]", // orange
 ];
 
-export function createSeriesCard(
+export const createSeriesCard = (
   series: Series,
   position: number,
   onVote: (id: number) => void,
-): HTMLElement {
+): HTMLElement => {
   const card = document.createElement("article");
   card.dataset.seriesId = String(series.id);
   card.className = [
@@ -72,8 +72,7 @@ export function createSeriesCard(
     .querySelector(".js-vote-btn")!
     .addEventListener("click", () => onVote(series.id));
   return card;
-}
+};
 
-function escHtml(str: string): string {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
+const escHtml = (str: string): string =>
+  str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

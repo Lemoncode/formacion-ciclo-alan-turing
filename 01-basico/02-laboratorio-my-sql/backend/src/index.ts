@@ -22,7 +22,7 @@ const dbConfig = {
   connectionLimit: 10,
 };
 
-async function createPool(retries = 15): Promise<Pool> {
+const createPool = async (retries = 15): Promise<Pool> => {
   for (let i = 0; i < retries; i++) {
     try {
       const pool = mysql.createPool(dbConfig);
@@ -35,7 +35,7 @@ async function createPool(retries = 15): Promise<Pool> {
     }
   }
   throw new Error("No se pudo conectar a la base de datos");
-}
+};
 
 (async () => {
   const pool = await createPool();
