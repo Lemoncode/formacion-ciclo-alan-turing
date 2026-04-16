@@ -112,6 +112,6 @@ async function createPool(retries = 15): Promise<Pool> {
   });
 
   app.listen(3000, () => {
-    console.log("🚀 Servidor arrancado en http://localhost:3000");
+    console.log("Servidor arrancado en http://localhost:3000");
   });
 })();
