@@ -1,8 +1,3 @@
-// components/series-card.ts
-// Factory function que crea el elemento DOM de una card.
-// Se usa dentro del script cliente de series.pod.astro.
-// No es un componente Astro porque se renderiza dinámicamente en el cliente.
-
 import type { Series } from "../series.model";
 import { rankLabel, genreColorIndex } from "../series.business";
 

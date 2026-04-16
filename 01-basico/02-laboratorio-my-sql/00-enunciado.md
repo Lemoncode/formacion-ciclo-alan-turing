@@ -40,11 +40,10 @@ El frontend y el backend corren en local (`npm run dev`). Tu misión es escribir
 ```
 02-laboratorio-my-sql/
 ├── backend/              ← API Express + TypeScript (ya hecho)
+│   ├── init.sql          ← Schema + datos de ejemplo
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── src/server.ts
-├── db/
-│   └── init.sql          ← Schema + datos de ejemplo
 ├── frontend/             ← Astro + TypeScript — PODS Architecture (ya hecho)
 │   ├── astro.config.ts   ← proxy /api → localhost:3000
 │   ├── package.json
@@ -101,14 +100,14 @@ El compose sólo necesita **un servicio**: la base de datos. El frontend y el ba
 
 ### ¿Qué tiene que tener el servicio `db`?
 
-| Qué necesitas configurar   | Pista                                                               |
-| -------------------------- | ------------------------------------------------------------------- |
-| Imagen de MySQL            | `mysql:8.0`                                                         |
-| Contraseña de root         | Variable de entorno `MYSQL_ROOT_PASSWORD`                           |
-| Nombre de la base de datos | Variable de entorno `MYSQL_DATABASE`                                |
-| Puerto expuesto al host    | `3306:3306` (host:contenedor)                                       |
-| Dónde guardar los datos    | Bind mount: `./mysql-data:/var/lib/mysql`                           |
-| Script de inicialización   | Bind mount: `./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro` |
+| Qué necesitas configurar   | Pista                                                                    |
+| -------------------------- | ------------------------------------------------------------------------ |
+| Imagen de MySQL            | `mysql:8.0`                                                              |
+| Contraseña de root         | Variable de entorno `MYSQL_ROOT_PASSWORD`                                |
+| Nombre de la base de datos | Variable de entorno `MYSQL_DATABASE`                                     |
+| Puerto expuesto al host    | `3306:3306` (host:contenedor)                                            |
+| Dónde guardar los datos    | Bind mount: `./mysql-data:/var/lib/mysql`                                |
+| Script de inicialización   | Bind mount: `./backend/init.sql:/docker-entrypoint-initdb.d/init.sql:ro` |
 
 > 💡 **¿Qué es un bind mount?** Es una forma de decirle a Docker: "esta carpeta de mi ordenador (`./mysql-data`) es la misma que esta ruta del contenedor (`/var/lib/mysql`)". Todo lo que MySQL guarde dentro del contenedor aparecerá en tu carpeta local.
 
@@ -151,7 +150,7 @@ services:
 El bind mount del script SQL lleva `:ro` al final (read-only). Eso evita que el contenedor pueda modificar tu fichero original:
 
 ```
-./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+./backend/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 ```
 
 </details>

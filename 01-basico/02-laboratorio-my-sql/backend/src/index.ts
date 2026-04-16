@@ -1,9 +1,7 @@
 import express, { Request, Response } from "express";
 import mysql, { Pool, RowDataPacket, ResultSetHeader } from "mysql2/promise";
-import cors from "cors";
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
 interface SeriesRow extends RowDataPacket {
