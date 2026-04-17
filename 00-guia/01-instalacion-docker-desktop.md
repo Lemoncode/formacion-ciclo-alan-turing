@@ -2,7 +2,7 @@
 
 Docker Desktop es la aplicación oficial para usar Docker en tu ordenador. Incluye la herramienta de línea de comandos `docker`, un motor local y una interfaz gráfica para gestionar contenedores e imágenes.
 
-> Es gratuito para uso personal y educativo. [Ver precios](https://www.docker.com/pricing/)
+> Docker Desktop puede ser gratuito en algunos casos (por ejemplo, uso personal, educativo o determinadas organizaciones pequeñas), pero la licencia depende también del tipo y tamaño de la organización y del uso. Consulta las condiciones actualizadas en la página oficial de [precios y licencias](https://www.docker.com/pricing/).
 
 ---
 
@@ -10,8 +10,6 @@ Docker Desktop es la aplicación oficial para usar Docker en tu ordenador. Inclu
 
 ### Requisitos previos
 
-- Windows 10 versión **22H2** o superior, o Windows 11
-- Virtualización por hardware activada en la BIOS (en la mayoría de equipos ya lo está)
 - WSL2 instalado y configurado
 
 > **Versión de Windows:** Pulsa `Win + R`, escribe `winver` y pulsa Enter. Si tu versión es anterior a 22H2, ve a **Configuración → Windows Update** y actualiza antes de continuar.
@@ -75,7 +73,7 @@ wsl --set-default-version 2
 
 **5. Instalar Ubuntu desde la Microsoft Store:**
 
-Busca "Ubuntu" en la [Microsoft Store](ms-windows-store://search/?query=Ubuntu) e instala la versión sin número (siempre la LTS más reciente). Al abrirlo por primera vez te pedirá crear un usuario y contraseña de Linux.
+Busca "Ubuntu" en la [Microsoft Store](https://apps.microsoft.com/search?query=Ubuntu) e instala la versión sin número (siempre la LTS más reciente). Al abrirlo por primera vez te pedirá crear un usuario y contraseña de Linux.
 
 [Referencia oficial — Instalación manual de WSL](https://learn.microsoft.com/es-es/windows/wsl/install-manual)
 
@@ -134,17 +132,13 @@ Si ves el mensaje **"Hello from Docker!"**, la instalación es correcta.
 
 ## Solución de problemas
 
-**"WSL 2 installation is incomplete"**
-Abre PowerShell como administrador y ejecuta `wsl --update`. Reinicia Docker Desktop.
-
-**"Hardware assisted virtualization must be enabled"**
-La virtualización está desactivada en la BIOS. Sigue los pasos del apartado [Activar la virtualización](#1-activar-la-virtualización-solo-si-es-necesario).
-
-**Docker no arranca en Windows**
-Abre PowerShell como administrador, ejecuta `wsl --shutdown`, espera 10 segundos y vuelve a abrir Docker Desktop.
-
-**macOS bloquea la apertura de Docker**
-Ve a **Ajustes del sistema → Privacidad y seguridad** y haz clic en **"Abrir igualmente"** junto al mensaje de Docker.
-
-**Consumo elevado de RAM**
-En Docker Desktop ve a **Settings → Resources → Advanced** y reduce el valor de **Memory**.
+- **"WSL 2 installation is incomplete"**  
+  Abre PowerShell como administrador y ejecuta `wsl --update`. Reinicia Docker Desktop.
+- **"Hardware assisted virtualization must be enabled"**  
+  La virtualización está desactivada en la BIOS. Sigue los pasos del apartado [Activar la virtualización](#1-activar-la-virtualización-solo-si-es-necesario).
+- **Docker no arranca en Windows**  
+  Abre PowerShell como administrador, ejecuta `wsl --shutdown`, espera 10 segundos y vuelve a abrir Docker Desktop.
+- **macOS bloquea la apertura de Docker**  
+  Ve a **Ajustes del sistema → Privacidad y seguridad** y haz clic en **"Abrir igualmente"** junto al mensaje de Docker.
+- **Consumo elevado de RAM**  
+  En Docker Desktop ve a **Settings → Resources → Advanced** y reduce el valor de **Memory**.
