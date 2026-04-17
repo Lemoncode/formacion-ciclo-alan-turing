@@ -10,7 +10,8 @@ Docker Desktop es la aplicación oficial para usar Docker en tu ordenador. Inclu
 
 ### Requisitos previos
 
-- WSL2 instalado y configurado
+- Windows 10 versión **22H2** o superior, o Windows 11
+- Virtualización por hardware activada en la BIOS (en la mayoría de equipos ya lo está)
 
 > **Versión de Windows:** Pulsa `Win + R`, escribe `winver` y pulsa Enter. Si tu versión es anterior a 22H2, ve a **Configuración → Windows Update** y actualiza antes de continuar.
 
