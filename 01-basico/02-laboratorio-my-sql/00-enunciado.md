@@ -10,29 +10,6 @@ Tienes delante una aplicación **SeriesRank** ya construida: un ranking de serie
 
 El frontend y el backend corren en local (`npm run dev`). Tu misión es escribir el `docker-compose.yml` que levante **sólo la base de datos** con persistencia de datos.
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                       Tu ordenador                           │
-│                                                              │
-│  Navegador ──► :4321 ──► Frontend Astro (npm run dev)        │
-│                               │ proxy /api/*                 │
-│                               ▼                              │
-│                      Backend Express (npm run dev)           │
-│                          :3000                               │
-│                               │                              │
-│                               ▼                              │
-│                  ┌────────────────────────┐                  │
-│                  │  Contenedor Docker: db │                  │
-│                  │     MySQL 8.0  :3306   │                  │
-│                  └───────────┬────────────┘                  │
-│                              │ monta                         │
-│                  ┌───────────▼────────────┐                  │
-│                  │  carpeta ./mysql-data  │                  │
-│                  │  (en tu ordenador)     │                  │
-│                  └────────────────────────┘                  │
-└──────────────────────────────────────────────────────────────┘
-```
-
 ---
 
 ## Estructura del proyecto
@@ -195,8 +172,8 @@ npm run dev
 Deberías ver en la consola:
 
 ```
-✅ Conexión a base de datos establecida
-🚀 Servidor arrancado en http://localhost:3000
+Conexión a base de datos establecida
+Servidor arrancado en http://localhost:3000
 ```
 
 Si ves un error de conexión, espera 10-15 segundos y vuelve a intentarlo. MySQL necesita unos segundos para arrancar por completo.
@@ -277,35 +254,3 @@ rm -rf mysql-data/
 # 3. Vuelve a arrancar — el init.sql se ejecuta de nuevo automáticamente
 docker compose up -d
 ```
-
----
-
-## Checklist de entrega
-
-- [ ] El fichero `docker-compose.yml` existe en la raíz del laboratorio
-- [ ] `docker compose up -d` arranca MySQL sin errores
-- [ ] El ranking se ve en `http://localhost:4321`
-- [ ] La carpeta `mysql-data/` se ha creado sola al arrancar Docker
-- [ ] Al hacer `docker compose down` y `docker compose up -d` los datos siguen ahí
-- [ ] Se han añadido al menos 3 series nuevas
-
----
-
-## Bonus (opcional)
-
-- Añade `restart: unless-stopped` al servicio `db`. ¿Para qué sirve?
-- Intenta conectarte a MySQL desde **TablePlus** o **DBeaver** usando `localhost:3306` mientras el contenedor está corriendo
-- ¿Qué diferencia hay entre un **bind mount** (`./mysql-data`) y un **named volume** (`mysql-data:` declarado al final del compose)?
-
----
-
-## Referencia rápida
-
-| Comando                       | Para qué sirve                                         |
-| ----------------------------- | ------------------------------------------------------ |
-| `docker compose up -d`        | Arrancar en background                                 |
-| `docker compose down`         | Parar y eliminar contenedores (la carpeta se conserva) |
-| `docker compose ps`           | Ver el estado de los servicios                         |
-| `docker compose logs -f db`   | Ver logs de MySQL en tiempo real                       |
-| `docker compose exec db bash` | Abrir una shell dentro del contenedor                  |
-| `rm -rf mysql-data/`          | Borrar los datos de MySQL para empezar desde cero      |
