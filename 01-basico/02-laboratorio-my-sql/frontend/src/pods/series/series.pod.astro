@@ -134,7 +134,6 @@
   Laboratorio Docker Compose · Lemoncode
 </footer>
 
-<!-- ── Script cliente (TypeScript bundleado por Astro/Vite) ── -->
 <script>
   import { fetchSeries, voteSeries, addSeries } from "./api/series.api";
   import { mapSeries } from "./series.mapper";
@@ -142,10 +141,8 @@
   import { createSeriesCard } from "./components/series-card";
   import type { Series } from "./series.model";
 
-  // ── Estado ────────────────────────────────────────
   let seriesList: Series[] = [];
 
-  // ── Referencias DOM ───────────────────────────────
   const grid = document.getElementById("series-grid")!;
   const skeletons = document.getElementById("skeletons")!;
   const emptyMsg = document.getElementById("empty-msg")!;
@@ -154,7 +151,6 @@
   const formErr = document.getElementById("form-error")!;
   const addBtn = document.getElementById("add-btn") as HTMLButtonElement;
 
-  // ── Render ────────────────────────────────────────
   function render(): void {
     grid.innerHTML = "";
     badge.textContent = `${seriesList.length} serie${seriesList.length !== 1 ? "s" : ""}`;
@@ -170,7 +166,6 @@
     });
   }
 
-  // ── Acciones ──────────────────────────────────────
   async function handleVote(id: number): Promise<void> {
     try {
       const updated = await voteSeries(id);
@@ -185,7 +180,6 @@
     }
   }
 
-  // ── Formulario ────────────────────────────────────
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     formErr.classList.add("hidden");
@@ -225,18 +219,21 @@
     }
   });
 
-  // ── Init ──────────────────────────────────────────
   async function init(): Promise<void> {
+    let loadSucceeded = false;
     try {
       const raw = await fetchSeries();
       seriesList = sortByVotes(raw.map(mapSeries));
+      loadSucceeded = true;
     } catch (err) {
       grid.innerHTML = `<p class="col-span-full text-[#b45aff] p-4">
         ⚠️ No se pudo conectar con la API. ¿Está el backend arrancado?
       </p>`;
     } finally {
       skeletons.remove();
-      render();
+      if (loadSucceeded) {
+        render();
+      }
     }
   }
 

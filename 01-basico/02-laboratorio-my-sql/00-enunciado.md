@@ -20,7 +20,7 @@ El frontend y el backend corren en local (`npm run dev`). Tu misión es escribir
 │   ├── init.sql          ← Schema + datos de ejemplo
 │   ├── package.json
 │   ├── tsconfig.json
-│   └── src/server.ts
+│   └── src/index.ts
 ├── frontend/             ← Astro + TypeScript — PODS Architecture (ya hecho)
 │   ├── astro.config.ts   ← proxy /api → localhost:3000
 │   ├── package.json

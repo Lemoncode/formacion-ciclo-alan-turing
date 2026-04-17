@@ -25,7 +25,8 @@ const dbConfig = {
 const createPool = async (retries = 15): Promise<Pool> => {
   for (let i = 0; i < retries; i++) {
     try {
-      const pool = mysql.createPool(dbConfig);
+      let pool: Pool | undefined;
+      pool = mysql.createPool(dbConfig);
       await pool.query("SELECT 1");
       console.log("✅ Conexión a base de datos establecida");
       return pool;
