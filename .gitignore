@@ -6,3 +6,7 @@ build
 *.tmp
 *.env
 .idea
+.astro
+mysql-data/
+mflix-data/
+airbnb-data/

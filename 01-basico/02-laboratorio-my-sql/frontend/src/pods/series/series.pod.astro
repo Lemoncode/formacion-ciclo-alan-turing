@@ -1,0 +1,241 @@
+---
+
+---
+
+<!-- ── Header ─────────────────────────────────────── -->
+<div class="relative overflow-hidden border-b border-[#2a2a4a] bg-[#0d0d1a]">
+  <!-- Glow decorativo -->
+  <div
+    class="absolute inset-0 pointer-events-none"
+    style="background: radial-gradient(ellipse 55% 60% at 15% 50%, #ff2d7815 0%, transparent 70%),
+                        radial-gradient(ellipse 55% 60% at 85% 50%, #00dfd815 0%, transparent 70%);"
+  >
+  </div>
+
+  <div class="relative z-10 max-w-5xl mx-auto px-6 py-10 text-center">
+    <h1
+      class="font-mono font-bold tracking-tight"
+      style="font-size: clamp(2rem, 7vw, 3.5rem);
+             background: linear-gradient(90deg, #ff2d78, #b45aff, #00dfd8);
+             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+             background-clip: text;"
+    >
+      ⚡ SeriesRank
+    </h1>
+    <p class="mt-2 text-[#7878a0] text-sm uppercase tracking-[0.2em]">
+      Vota por las series que más molan
+    </p>
+  </div>
+</div>
+
+<!-- ── Contenido principal ────────────────────────── -->
+<main class="max-w-5xl mx-auto px-4 py-8 flex flex-col gap-8">
+  <!-- Formulario -->
+  <section class="bg-[#1a1a2e] border border-[#2a2a4a] rounded-2xl p-6">
+    <h2
+      class="font-mono text-[#00dfd8] text-xs uppercase tracking-[0.2em] mb-4"
+    >
+      + Añadir serie
+    </h2>
+    <form id="add-form" novalidate>
+      <div class="grid gap-3 sm:grid-cols-[2fr_1.4fr_1fr_auto]">
+        <input
+          id="input-title"
+          type="text"
+          placeholder="Título *"
+          maxlength="200"
+          class="bg-[#1f1f38] border border-[#2a2a4a] text-[#e8e8f0]
+                 rounded-lg px-4 py-2.5 text-sm
+                 placeholder:text-[#7878a0] outline-none
+                 focus:border-[#ff2d78] focus:shadow-[0_0_0_3px_#ff2d7820]
+                 transition-all"
+        />
+        <input
+          id="input-genre"
+          type="text"
+          placeholder="Género (ej: Anime)"
+          maxlength="100"
+          class="bg-[#1f1f38] border border-[#2a2a4a] text-[#e8e8f0]
+                 rounded-lg px-4 py-2.5 text-sm
+                 placeholder:text-[#7878a0] outline-none
+                 focus:border-[#ff2d78] focus:shadow-[0_0_0_3px_#ff2d7820]
+                 transition-all"
+        />
+        <input
+          id="input-year"
+          type="number"
+          placeholder="Año"
+          min="1950"
+          max="2030"
+          class="bg-[#1f1f38] border border-[#2a2a4a] text-[#e8e8f0]
+                 rounded-lg px-4 py-2.5 text-sm
+                 placeholder:text-[#7878a0] outline-none
+                 focus:border-[#ff2d78] focus:shadow-[0_0_0_3px_#ff2d7820]
+                 transition-all"
+        />
+        <button
+          id="add-btn"
+          type="submit"
+          class="px-6 py-2.5 rounded-lg font-mono font-bold text-sm
+                 text-white bg-[#ff2d78]
+                 hover:shadow-[0_0_18px_#ff2d7866] hover:-translate-y-0.5
+                 active:scale-95 transition-all duration-150 whitespace-nowrap"
+        >
+          Añadir
+        </button>
+      </div>
+      <p id="form-error" class="mt-2 text-[#b45aff] text-sm hidden"></p>
+    </form>
+  </section>
+
+  <!-- Ranking -->
+  <section>
+    <div class="flex items-baseline gap-3 mb-4">
+      <h2 class="font-mono text-[#00dfd8] text-xs uppercase tracking-[0.2em]">
+        📊 Ranking
+      </h2>
+      <span
+        id="total-badge"
+        class="text-[0.7rem] text-[#7878a0] bg-[#1a1a2e] border border-[#2a2a4a]
+               rounded-full px-2.5 py-0.5"
+      >
+        0 series
+      </span>
+    </div>
+
+    <!-- Grid de cards (populado por el script) -->
+    <div id="series-grid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    </div>
+
+    <!-- Estado vacío -->
+    <p id="empty-msg" class="hidden text-center text-[#7878a0] py-16">
+      Todavía no hay series. ¡Sé el primero en añadir una! 👆
+    </p>
+
+    <!-- Skeletons iniciales (ocultos por JS en cuanto carga) -->
+    <div id="skeletons" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        Array.from({ length: 6 }).map(() => (
+          <div class="bg-[#1a1a2e] border border-[#2a2a4a] rounded-xl p-5 flex flex-col gap-3">
+            <div class="h-4 w-3/5 rounded bg-[#1f1f38] animate-pulse" />
+            <div class="h-3 w-2/5 rounded bg-[#1f1f38] animate-pulse" />
+            <div class="h-8 w-full rounded bg-[#1f1f38] animate-pulse mt-auto" />
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</main>
+
+<!-- ── Footer ─────────────────────────────────────── -->
+<footer
+  class="text-center py-6 text-[#7878a0] text-xs border-t border-[#1a1a2e]"
+>
+  Laboratorio Docker Compose · Lemoncode
+</footer>
+
+<script>
+  import { fetchSeries, voteSeries, addSeries } from "./api/series.api";
+  import { mapSeries } from "./series.mapper";
+  import { sortByVotes } from "./series.business";
+  import { createSeriesCard } from "./components/series-card";
+  import type { Series } from "./series.model";
+
+  let seriesList: Series[] = [];
+
+  const grid = document.getElementById("series-grid")!;
+  const skeletons = document.getElementById("skeletons")!;
+  const emptyMsg = document.getElementById("empty-msg")!;
+  const badge = document.getElementById("total-badge")!;
+  const form = document.getElementById("add-form") as HTMLFormElement;
+  const formErr = document.getElementById("form-error")!;
+  const addBtn = document.getElementById("add-btn") as HTMLButtonElement;
+
+  function render(): void {
+    grid.innerHTML = "";
+    badge.textContent = `${seriesList.length} serie${seriesList.length !== 1 ? "s" : ""}`;
+
+    if (seriesList.length === 0) {
+      emptyMsg.classList.remove("hidden");
+      return;
+    }
+
+    emptyMsg.classList.add("hidden");
+    seriesList.forEach((s, i) => {
+      grid.appendChild(createSeriesCard(s, i + 1, handleVote));
+    });
+  }
+
+  async function handleVote(id: number): Promise<void> {
+    try {
+      const updated = await voteSeries(id);
+      seriesList = sortByVotes(
+        seriesList.map((s) =>
+          s.id === updated.id ? { ...s, votes: updated.votes } : s,
+        ),
+      );
+      render();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    formErr.classList.add("hidden");
+
+    const title = (
+      document.getElementById("input-title") as HTMLInputElement
+    ).value.trim();
+    const genre =
+      (
+        document.getElementById("input-genre") as HTMLInputElement
+      ).value.trim() || null;
+    const yearRaw = (
+      document.getElementById("input-year") as HTMLInputElement
+    ).value.trim();
+    const year = yearRaw ? Number(yearRaw) : null;
+
+    if (!title) {
+      formErr.textContent = "El título es obligatorio.";
+      formErr.classList.remove("hidden");
+      return;
+    }
+
+    addBtn.disabled = true;
+    addBtn.textContent = "...";
+
+    try {
+      const created = await addSeries(title, genre, year);
+      seriesList = sortByVotes([...seriesList, mapSeries(created)]);
+      render();
+      form.reset();
+    } catch (err) {
+      formErr.textContent = (err as Error).message;
+      formErr.classList.remove("hidden");
+    } finally {
+      addBtn.disabled = false;
+      addBtn.textContent = "Añadir";
+    }
+  });
+
+  async function init(): Promise<void> {
+    let loadSucceeded = false;
+    try {
+      const raw = await fetchSeries();
+      seriesList = sortByVotes(raw.map(mapSeries));
+      loadSucceeded = true;
+    } catch (err) {
+      grid.innerHTML = `<p class="col-span-full text-[#b45aff] p-4">
+        ⚠️ No se pudo conectar con la API. ¿Está el backend arrancado?
+      </p>`;
+    } finally {
+      skeletons.remove();
+      if (loadSucceeded) {
+        render();
+      }
+    }
+  }
+
+  init();
+</script>

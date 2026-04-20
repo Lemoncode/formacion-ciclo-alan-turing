@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* ─── Paleta Synthwave Neon ───────────────────────────────
+   Oscuro retrofuturista: rosa eléctrico, cian y violeta.
+   ─────────────────────────────────────────────────────── */
+:root {
+  --accent-1: #ff2d78; /* hot pink */
+  --accent-2: #00dfd8; /* cyan */
+  --accent-3: #b45aff; /* violet */
+  --surface: #1a1a2e;
+  --surface-2: #1f1f38;
+  --border: #2a2a4a;
+  --muted: #7878a0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0d1a;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a4a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-1);
+}
