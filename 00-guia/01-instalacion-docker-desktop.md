@@ -117,20 +117,6 @@ Cuando el icono de la ballena en la barra de menús deje de animarse y muestre *
 
 [Documentación oficial — Mac](https://docs.docker.com/desktop/setup/install/mac-install/)
 
----
-
-## Verificar la instalación
-
-Abre una terminal (PowerShell en Windows, Terminal en Mac) y ejecuta:
-
-```bash
-docker run hello-world
-```
-
-Si ves el mensaje **"Hello from Docker!"**, la instalación es correcta.
-
----
-
 ## Solución de problemas
 
 - **"WSL 2 installation is incomplete"**  
@@ -143,3 +129,21 @@ Si ves el mensaje **"Hello from Docker!"**, la instalación es correcta.
   Ve a **Ajustes del sistema → Privacidad y seguridad** y haz clic en **"Abrir igualmente"** junto al mensaje de Docker.
 - **Consumo elevado de RAM**  
   En Docker Desktop ve a **Settings → Resources → Advanced** y reduce el valor de **Memory**.
+
+---
+
+## Verificar la instalación
+
+Abre una terminal y ejecuta:
+
+```bash
+docker --version
+```
+
+Deberías ver algo como:
+
+```
+Docker version 29.x.x, build xxxxxxx
+```
+
+Si ambos comandos responden sin error, Docker está correctamente instalado y listo para usar.
