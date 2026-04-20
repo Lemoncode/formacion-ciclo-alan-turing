@@ -1,0 +1,15 @@
+services:
+  mongo-mflix:
+    image: mongo:8
+    container_name: mi-servidor-mflix
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mflix-data:/data/db
+  mongo-airbnb:
+    image: mongo:4.4
+    container_name: mi-servidor-airbnb
+    ports:
+      - "27018:27017" # ¡Cambiamos el puerto host para evitar colisiones!
+    volumes:
+      - ./airbnb-data:/data/db

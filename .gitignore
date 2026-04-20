@@ -1,5 +1,12 @@
-node_modules/
+.DS_Store
+node_modules
 dist
+build
+*.log
+*.tmp
+*.env
+.idea
 .astro
 mysql-data/
-.DS_Store
+mflix-data/
+airbnb-data/
