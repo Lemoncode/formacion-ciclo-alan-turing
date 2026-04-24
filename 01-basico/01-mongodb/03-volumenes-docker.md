@@ -32,7 +32,7 @@ A continuación, vamos a montar nuestro servidor de MongoDB, pero esta vez le in
 Usaremos el **flag `-v <nombre_volumen>:<ruta_contenedor>`**:
 
 ```bash
-docker run -d --name mi-servidor-mongo -p 27017:27017 -v mi-volumen-mongo:/data/db mongo
+docker run -d --name mi-servidor-mongo -p 27017:27017 -v mi-volumen-mongo:/data/db mongo:8
 ```
 
 > **Nota:** La ruta `/data/db` es el directorio estándar por defecto que usa la imagen oficial de MongoDB dentro de su sistema de archivos linux para almacenar las bases de datos.
@@ -58,6 +58,7 @@ Si abres **MongoDB Compass** (`mongodb://localhost:27017`), podrás comprobar qu
 
 > **Alternativa con interfaz gráfica:**
 > También puedes insertar estos datos directamente usando **MongoDB Compass**. Solo tendrías que crear la base de datos `curso_docker`, la colección `alumnos`, pulsar en "ADD DATA" -> "Insert Document" y pegar el siguiente array en formato JSON (asegúrate de representarlo como un array de objetos):
+>
 > ```json
 > [
 >   {
@@ -87,7 +88,7 @@ En este punto, si intentas interactuar o recargar datos en MongoDB Compass, dar�
 Vamos a arrancar un **contenedor completamente nuevo**, de hecho, incluso le vamos a poner otro nombre distinto, pero la clave está en conectarle el **mismo volumen** que usamos en el paso 2:
 
 ```bash
-docker run -d --name mi-nuevo-servidor-mongo -p 27017:27017 -v mi-volumen-mongo:/data/db mongo
+docker run -d --name mi-nuevo-servidor-mongo -p 27017:27017 -v mi-volumen-mongo:/data/db mongo:8
 ```
 
 Vuelve a **MongoDB Compass** y haz clic en Conectar de nuevo.

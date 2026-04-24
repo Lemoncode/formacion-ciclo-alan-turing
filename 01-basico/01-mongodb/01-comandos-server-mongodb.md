@@ -10,15 +10,13 @@ Primero, necesitamos la imagen oficial de MongoDB. Todas las imágenes oficiales
 
 ## 2. Iniciar el contenedor de MongoDB
 
-Vamos a ejecutar un contenedor en segundo plano (`-d` o `--detach`) para que nuestra terminal no se quede bloqueada, y le asignaremos un nombre (`--name`) para referirnos a él fácilmente. También mapearemos el puerto por defecto de MongoDB (`-p 27017:27017`) a nuestra máquina host:
+Vamos a ejecutar un contenedor en segundo plano (`-d` o `--detach`) para que nuestra terminal no se quede bloqueada, y le asignaremos un nombre (`--name`) para referirnos a él fácilmente:
 
 ```bash
-docker run -d --name mi-servidor-mongo -p 27017:27017 mongo
+docker run -d --name mi-servidor-mongo mongo:8
 ```
 
 > [Opciones de Docker run](https://docs.docker.com/engine/reference/commandline/run/)
->
-> `-p <puerto_host>:<puerto_contenedor>`: Expone un puerto o un rango de puertos. El puerto de la izquierda corresponde a tu máquina (host) y el de la derecha al puerto dentro del contenedor.
 >
 > `-d`: Para iniciar un contenedor en segundo plano (detached mode)
 >
