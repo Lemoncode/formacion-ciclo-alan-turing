@@ -1,0 +1,23 @@
+services:
+  coffee-db:
+    image: mongo:8
+    container_name: coffee-db-container
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./coffe-db-data:/data/db
+
+  backend:
+    image: <tu-usuario>/coffe-backend:1.0.0
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb://coffee-db:27017
+      - DB_NAME=malaga-coffee
+      - PORT=3000
+    depends_on:
+      - coffee-db
+
+networks:
+  default:
+    name: malaga-coffee-network
