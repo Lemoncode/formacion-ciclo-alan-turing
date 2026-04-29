@@ -28,7 +28,6 @@ Tu misión: **entender el `Dockerfile` que te proporcionamos y escribir el `dock
 │   ├── storage/
 │   ├── artisan
 │   ├── composer.json
-│   ├── .env.example
 │   └── Dockerfile        ← ya proporcionado, solo lo lees
 ├── db/
 │   └── init.sql          ← schema + datos de ejemplo (ya proporcionado)
@@ -116,16 +115,13 @@ COPY . .
 # Regenera el autoloader con todos los ficheros de la aplicación
 RUN composer dump-autoload --optimize
 
-# Crea el .env a partir del ejemplo y genera la APP_KEY
-RUN cp .env.example .env && php artisan key:generate
-
 # Permisos de escritura en los directorios que Laravel necesita
 RUN chmod +x artisan \
     && mkdir -p storage/logs storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache \
     && chmod -R 777 storage bootstrap/cache
 ```
 
-> **¿Qué es la `APP_KEY`?** Es una clave de cifrado que Laravel usa internamente para proteger sesiones y datos. Debe generarse una vez y mantenerse secreta. En producción se inyecta como variable de entorno; aquí la generamos durante la build para simplificar el laboratorio.
+> **¿Qué es la `APP_KEY`?** Es una clave de cifrado que Laravel usa internamente para proteger sesiones y datos. En lugar de generarla durante la build, la inyectamos como variable de entorno desde `docker-compose.yml`. Así el Dockerfile queda sin estado y la misma imagen puede reutilizarse en distintos entornos.
 
 ### Puerto y arranque
 
@@ -169,20 +165,33 @@ build: ./backend
 
 El backend escucha en el `8000`. Mapealo igual que hiciste con MySQL.
 
-**3. Pasarle las variables de entorno de conexión a la base de datos**
+**3. Pasarle las variables de entorno a la aplicación**
 
-Laravel necesita saber a qué host, base de datos, usuario y contraseña conectarse. Pásalas como `environment`. Las claves que espera son:
+Laravel necesita tanto la configuración de la base de datos como las variables propias de la aplicación. Pásalas todas como `environment`:
 
-```
-DB_HOST
-DB_PORT
-DB_DATABASE
-DB_USERNAME
-DB_PASSWORD
-```
+| Variable        | Pista                                                               |
+| --------------- | ------------------------------------------------------------------- |
+| `APP_NAME`      | El nombre de la app, p.ej. `BookShelf`                              |
+| `APP_ENV`       | Entorno local de desarrollo: `local`                                |
+| `APP_KEY`       | Ver nota abajo                                                      |
+| `APP_DEBUG`     | `false` (no necesitamos stacktraces en el navegador)                |
+| `APP_URL`       | La URL pública del backend: `http://localhost:8000`                 |
+| `DB_CONNECTION` | El driver de base de datos que usa Laravel: `mysql`                 |
+| `DB_HOST`       | Ver nota abajo                                                      |
+| `DB_PORT`       | Puerto estándar de MySQL: `3306`                                    |
+| `DB_DATABASE`   | El nombre de la base de datos que configuraste en el servicio MySQL |
+| `DB_USERNAME`   | El usuario de MySQL que configuraste                                |
+| `DB_PASSWORD`   | La contraseña de MySQL que configuraste                             |
 
-> **Punto crítico — ¿qué valor pones en `DB_HOST`?**
-> No es `localhost`. Cada contenedor es una máquina independiente, así que `localhost` dentro del backend se refiere al propio contenedor, no a MySQL.
+> **`APP_KEY`:** Laravel la necesita para cifrar sesiones y otros datos internos. Genera un valor con `openssl rand -base64 32` y prefijaló con `base64:`. Por ejemplo:
+>
+> ```
+> base64:GdyfN3aV2MMto3pURnEBS6bbwDPumawD1pOJ/KLu4+4=
+> ```
+>
+> Al inyectarla como variable de entorno en Compose, el Dockerfile queda sin estado y la misma imagen sirve para cualquier entorno.
+
+> **`DB_HOST` — punto crítico:** No es `localhost`. Cada contenedor es una máquina independiente, así que `localhost` dentro del backend se refiere al propio contenedor, no a MySQL.
 > Docker Compose crea una red privada y registra cada servicio con su nombre. Usa el **nombre del servicio de MySQL** como host y Docker lo resolverá automáticamente.
 
 **4. Indicar que depende de la base de datos**

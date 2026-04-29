@@ -24,9 +24,6 @@ COPY . .
 # Regenera el autoloader incluyendo los ficheros de la aplicación
 RUN composer dump-autoload --optimize
 
-# Crea el .env a partir del ejemplo y genera la clave de la aplicación
-RUN cp .env.example .env && php artisan key:generate
-
 # Asegura permisos de escritura en los directorios que Laravel necesita
 RUN chmod +x artisan \
     && mkdir -p storage/logs storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache \
