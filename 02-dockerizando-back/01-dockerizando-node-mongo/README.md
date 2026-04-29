@@ -132,3 +132,37 @@ docker compose down
 | **Actualización**        | Usamos `docker compose pull` para descargar la última versión de las imágenes antes de levantar.            |
 | **Variables de entorno** | Sirven para configurar la imagen durante el arranque (p.ej., inyectar credenciales o URLs de conexión).     |
 | **Volúmenes**            | Separan y persisten los datos (como MongoDB) para que no se pierdan si se elimina el contenedor.            |
+
+---
+
+## Alternativa: Consumir el Dockerfile en local
+
+Si en lugar de descargar la imagen pre-compilada desde Docker Hub necesitas construirla directamente desde el código fuente y el `Dockerfile` del backend en local, debes usar la instrucción `build` en tu `docker-compose.yml` en lugar de `image`:
+
+```diff
+  backend:
+-   image: <tu-usuario>/coffe-backend:1.0.0
++   build:
++     context: ../00-conceptos/backend
++     dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+```
+
+> **Nota**: Asumimos que el backend a compilar se encuentra en `../00-conceptos/backend` o donde tengas alojado su directorio con el Dockerfile. Si tu archivo se llama exactamente `Dockerfile`, bastaría con poner la ruta relativa: `build: ../00-conceptos/backend`.
+
+### Reconstruir la imagen tras una actualización
+
+Cuando usas `build`, Docker compila la imagen la primera vez que levantas el sistema. Si hay cambios o una nueva versión en el código del backend, ejecutar `docker compose up` de nuevo **no recompilará** la imagen por defecto, por lo que no verás los cambios reflejados.
+
+Para forzar la construcción de la imagen y aplicar la nueva versión del código, utiliza el flag `--build`:
+
+```bash
+docker compose up -d --build
+```
+
+O si solo quieres reconstruir la imagen sin levantar los contenedores en ese momento, puedes usar:
+
+```bash
+docker compose build backend
+```
