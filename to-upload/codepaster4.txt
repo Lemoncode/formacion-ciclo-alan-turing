@@ -1,0 +1,202 @@
+
+# Proveedores Cloud
+
+- [Github](https://github.com)
+
+- [Docker Hub](https://hub.docker.com/)
+
+- [Render](https://render.com): Proveedor Cloud con tier gratuito (no necesitas tarjeta de crédito/débito).
+
+- [Vercel](https://vercel.com): Proveedor Cloud con tier gratuito (no necesitas tarjeta de crédito/débito).
+
+Opcionales:
+
+- [Azure](https://azure.microsoft.com/es-es/free/)
+
+- [Amazon AWS](https://aws.amazon.com/es/free/)
+
+*********************************
+
+https://github.com/Lemoncode/formacion-ciclo-alan-turing
+
+*********************************
+
+npm install -D tsx
+
+*********************************
+
+docker build -t <tu-usuario>/coffe-backend:1.0.0 .
+
+*********************************
+
+docker images
+
+*********************************
+
+docker push <tu-usuario>/coffe-backend:1.0.0
+
+*********************************
+
+https://hub.docker.com/
+
+
+*********************************
+
+npm install
+
+*********************************
+
+npm start
+
+*********************************
+
+docker-compose.yml
+
+*********************************
+
+services:
+  coffe-db:
+    image: mongo:8
+    container_name: coffe-db-container
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./coffe-db-data:/data/db
+
+*********************************
+
+services:
+  coffe-db:
+    image: mongo:8
+    container_name: coffe-db-container
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./coffe-db-data:/data/db
+  backend:
+    image: nasdan/coffe-backend:1.0.0
+    container_name: coffe-backend-container
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+
+
+*********************************
+
+services:
+  coffe-db:
+    image: mongo:8
+    container_name: coffe-db-container
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./coffe-db-data:/data/db
+  backend:
+    image: nasdan/coffe-backend:1.0.0
+    container_name: coffe-backend-container
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGODB_URI=mongodb://localhost:27017
+      - DB_NAME=malaga-coffe
+
+networks:
+  default:
+    name: malaga-coffe-network
+
+*********************************
+
+services:
+  coffe-db:
+    image: mongo:8
+    container_name: coffe-db-container
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./coffe-db-data:/data/db
+  backend:
+    image: nasdan/coffe-backend:1.0.0
+    container_name: coffe-backend-container
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGODB_URI=mongodb://coffe-db:27017
+      - DB_NAME=malaga-coffe
+    depends_on:
+      - coffe-db
+
+networks:
+  default:
+    name: malaga-coffe-network
+
+
+*********************************
+
+services:
+  coffe-db:
+    image: mongo:8
+    container_name: coffe-db-container
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./coffe-db-data:/data/db
+  backend:
+    image: nasdan/coffe-backend:1.0.0
+    platform: linux/arm64
+    container_name: coffe-backend-container
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGODB_URI=mongodb://coffe-db:27017
+      - DB_NAME=malaga-coffe
+    depends_on:
+      - coffe-db
+
+networks:
+  default:
+    name: malaga-coffe-network
+
+
+*********************************
+
+http://localhost:3000/api/orders
+
+*********************************
+
+services:
+  coffe-db:
+    image: mongo:8
+    container_name: coffe-db-container
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./coffe-db-data:/data/db
+  backend:
+    # build: ../clase/backende (ruta a vuestro Dockerfile)
+    build:
+      context: ../clase/backend
+      dockerfile: Dockerfile
+    container_name: coffe-backend-container
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGODB_URI=mongodb://coffe-db:27017
+      - DB_NAME=malaga-coffe
+    depends_on:
+      - coffe-db
+
+networks:
+  default:
+    name: malaga-coffe-network
+
+
+*********************************
+
+docker compose up -d --build
+
+*********************************
