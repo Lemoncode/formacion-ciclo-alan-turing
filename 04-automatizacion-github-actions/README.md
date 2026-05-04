@@ -238,14 +238,14 @@ jobs:
         run: npm run build
 
 +     - name: Upload artifact
-+       uses: actions/upload-pages-artifact@v3
++       uses: actions/upload-pages-artifact@v5
 +       with:
 +         path: dist
 
       - name: Deploy
 +       id: deployment
--       run: npm run deploy -- -r git@github.com:tu-user/repo.git
-+       uses: actions/deploy-pages@v4
+-       run: npm run deploy -- -r git@github.com:<tu-repositorio-ruta-git>.git
++       uses: actions/deploy-pages@v5
 ```
 
 Aplicamos cambios:
