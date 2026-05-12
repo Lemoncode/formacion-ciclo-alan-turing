@@ -83,8 +83,8 @@ docker images
 docker push <tu-usuario-de-dockerhub>/my-app:3
 ```
 
-> **¡Pregunta trampa!** Si acabamos de subir esta versión 3... ¿crees que la etiqueta `latest` que configuramos antes apunta ahora también a la versión 3 automáticamente? 
-> 
+> **¡Pregunta trampa!** Si acabamos de subir esta versión 3... ¿crees que la etiqueta `latest` que configuramos antes apunta ahora también a la versión 3 automáticamente?
+>
 > ¡La respuesta es **no**! En Docker, la etiqueta `latest` **no** es un puntero mágico que se actualice solo con tu subida más reciente. Es simplemente una cadena de texto más.
 
 Para mantener la coherencia, siempre que publiquemos una nueva versión principal, debemos desplazar y actualizar manualmente la capa `latest` para que los usuarios que descarguen la imagen sin especificar versión se lleven la verdadera última actualización:
@@ -121,13 +121,3 @@ docker run --name my-app-container --rm -d -p 8080:8080 <tu-usuario-de-dockerhub
 > `--platform linux/amd64` tanto en el comando `build` como en el `run`.
 
 Abre `http://localhost:8080` y comprobarás que el despliegue funciona a la perfección.
-
-# About Basefactor + Lemoncode
-
-We are an innovating team of Javascript experts, passionate about turning your ideas into robust products.
-
-[Basefactor, consultancy by Lemoncode](http://www.basefactor.com) provides consultancy and coaching services.
-
-[Lemoncode](http://lemoncode.net/services/en/#en-home) provides training services.
-
-For the LATAM/Spanish audience we are running an Online Front End Master degree, more info: http://lemoncode.net/master-frontend

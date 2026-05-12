@@ -69,13 +69,3 @@ sudo docker run --name my-app-container --rm -d -p 80:8083 <tu-usuario-de-docker
 > **Recordatorio (Arquitecturas cruzadas):** Si construiste la imagen en una máquina Apple Silicon (M1/M2/M3), AWS EC2 (que usa x86) no logrará ejecutarla al tener distinta arquitectura u arrojará un _warning_. De ser así, deberás empaquetar tu imagen en tu PC previamente usando el flag `docker build --platform linux/amd64 ...` e indicar `--platform linux/amd64` también en este `run`.
 
 ¡Despliegue finalizado! Para ver el resultado abre en tu navegador la DNS Pública o IP de la instancia de EC2 proporcionada en su panel: `http://<ec2-instance-dns>.<region>.compute.amazonaws.com` (recuerda usar obligatoriamente el protocolo `http://` normal y NO el seguro `https://`, ya que no le hemos montado un certificado SSL).
-
-# About Basefactor + Lemoncode
-
-We are an innovating team of Javascript experts, passionate about turning your ideas into robust products.
-
-[Basefactor, consultancy by Lemoncode](http://www.basefactor.com) provides consultancy and coaching services.
-
-[Lemoncode](http://lemoncode.net/services/en/#en-home) provides training services.
-
-For the LATAM/Spanish audience we are running an Online Front End Master degree, more info: http://lemoncode.net/master-frontend
