@@ -1,0 +1,157 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const API_URL = import.meta.env.API_URL ?? "http://localhost:8080";
+const { id } = Astro.params;
+
+interface MangaSeries {
+  id: number;
+  title: string;
+  author: string;
+  genre: string | null;
+  status: string;
+  chapters: number | null;
+  synopsis: string | null;
+  imageUrl: string | null;
+  createdAt: string;
+}
+
+let manga: MangaSeries | null = null;
+let error = "";
+
+try {
+  const response = await fetch(`${API_URL}/api/manga/${id}`);
+  if (response.status === 404) {
+    return Astro.redirect("/");
+  }
+  if (!response.ok) throw new Error(`Error ${response.status}`);
+  manga = await response.json();
+} catch (e) {
+  error = "No se pudo cargar la serie.";
+}
+
+function badgeClass(status: string) {
+  if (status === "Completed") return "badge badge-success badge-outline";
+  if (status === "Hiatus") return "badge badge-warning badge-outline";
+  return "badge badge-primary badge-outline";
+}
+
+const statusLabel: Record<string, string> = {
+  Ongoing: "En emisión",
+  Completed: "Completado",
+  Hiatus: "En pausa",
+};
+---
+
+<Layout title={manga?.title ?? "Detalle"}>
+  <a
+    href="/"
+    class="link link-hover text-base-content/50 text-sm flex items-center gap-1 mb-6"
+    >← Volver al catálogo</a
+  >
+
+  {
+    error && (
+      <div role="alert" class="alert alert-error mb-6">
+        <span>{error}</span>
+      </div>
+    )
+  }
+
+  {
+    manga && (
+      <article class="card bg-base-200 border border-base-300 border-t-4 border-t-primary shadow-xl max-w-3xl">
+        <div class="card-body gap-4">
+          <div class="flex justify-between items-start gap-3 flex-wrap">
+            <h1 class="font-display text-5xl tracking-widest leading-none">
+              {manga.title}
+            </h1>
+            <span class={badgeClass(manga.status)}>
+              {statusLabel[manga.status] ?? manga.status}
+            </span>
+          </div>
+          <p class="text-base-content/50">
+            por <strong class="text-base-content">{manga.author}</strong>
+          </p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {manga.genre && (
+              <div class="stat bg-base-300 rounded-box p-3">
+                <div class="stat-title text-xs">Género</div>
+                <div class="stat-value text-base font-semibold">
+                  {manga.genre}
+                </div>
+              </div>
+            )}
+            {manga.chapters && (
+              <div class="stat bg-base-300 rounded-box p-3">
+                <div class="stat-title text-xs">Capítulos</div>
+                <div class="stat-value text-base font-semibold">
+                  {manga.chapters}
+                </div>
+              </div>
+            )}
+            <div class="stat bg-base-300 rounded-box p-3">
+              <div class="stat-title text-xs">Añadida el</div>
+              <div class="stat-value text-base font-semibold">
+                {new Date(manga.createdAt).toLocaleDateString("es-ES")}
+              </div>
+            </div>
+          </div>
+
+          {manga.synopsis && (
+            <div>
+              <p class="text-xs font-bold uppercase tracking-widest text-base-content/40 mb-2">
+                Sinopsis
+              </p>
+              <p class="text-base-content/70 leading-relaxed">
+                {manga.synopsis}
+              </p>
+            </div>
+          )}
+
+          {manga.imageUrl && (
+            <img
+              src={manga.imageUrl}
+              alt={manga.title}
+              class="rounded-lg border border-base-300 max-w-[200px]"
+            />
+          )}
+
+          <div class="card-actions mt-2 pt-4 border-t border-base-300 gap-3">
+            <a class="btn btn-outline btn-sm" href={`/manga/${manga.id}/edit`}>
+              ✏️ Editar
+            </a>
+            <button class="btn btn-error btn-outline btn-sm" id="delete-btn">
+              🗑️ Eliminar
+            </button>
+          </div>
+        </div>
+      </article>
+    )
+  }
+</Layout>
+
+<script define:vars={{ mangaId: manga?.id }}>
+  const btn = document.getElementById("delete-btn");
+  if (btn) {
+    btn.addEventListener("click", async () => {
+      if (
+        !confirm(
+          "¿Seguro que quieres eliminar esta serie? Esta acción no se puede deshacer.",
+        )
+      )
+        return;
+      try {
+        const res = await fetch(`/api/manga/${mangaId}`, { method: "DELETE" });
+        if (res.ok) {
+          window.location.href = "/";
+        } else {
+          alert("Error al eliminar la serie.");
+        }
+      } catch {
+        alert("Error de conexión al eliminar.");
+      }
+    });
+  }
+</script>

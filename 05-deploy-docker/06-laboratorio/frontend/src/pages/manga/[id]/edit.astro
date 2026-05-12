@@ -1,0 +1,231 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+
+const API_URL = import.meta.env.API_URL ?? "http://localhost:8080";
+const { id } = Astro.params;
+
+interface MangaSeries {
+  id: number;
+  title: string;
+  author: string;
+  genre: string | null;
+  status: string;
+  chapters: number | null;
+  synopsis: string | null;
+  imageUrl: string | null;
+}
+
+let manga: MangaSeries | null = null;
+
+try {
+  const response = await fetch(`${API_URL}/api/manga/${id}`);
+  if (response.status === 404) return Astro.redirect("/");
+  if (!response.ok) throw new Error();
+  manga = await response.json();
+} catch {
+  return Astro.redirect("/");
+}
+---
+
+<Layout title={`Editar — ${manga?.title}`}>
+  <a
+    href={`/manga/${id}`}
+    class="link link-hover text-base-content/50 text-sm flex items-center gap-1 mb-6"
+    >← Volver al detalle</a
+  >
+
+  <h1 class="font-display text-4xl tracking-widest mb-1">Editar serie</h1>
+  {
+    manga && (
+      <p class="text-base-content/50 text-sm mb-6">
+        Modificando: <strong class="text-base-content">{manga.title}</strong>
+      </p>
+    )
+  }
+
+  <div role="alert" class="alert alert-error mb-4 hidden" id="error-msg"></div>
+
+  {
+    manga && (
+      <div class="card bg-base-200 border border-base-300 max-w-2xl">
+        <div class="card-body">
+          <form id="edit-form" novalidate>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="form-control">
+                <label class="label" for="title">
+                  <span class="label-text">Título *</span>
+                </label>
+                <input
+                  class="input input-bordered"
+                  type="text"
+                  id="title"
+                  name="title"
+                  required
+                  value={manga.title}
+                />
+              </div>
+              <div class="form-control">
+                <label class="label" for="author">
+                  <span class="label-text">Autor *</span>
+                </label>
+                <input
+                  class="input input-bordered"
+                  type="text"
+                  id="author"
+                  name="author"
+                  required
+                  value={manga.author}
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <div class="form-control">
+                <label class="label" for="genre">
+                  <span class="label-text">Género</span>
+                </label>
+                <input
+                  class="input input-bordered"
+                  type="text"
+                  id="genre"
+                  name="genre"
+                  value={manga.genre ?? ""}
+                />
+              </div>
+              <div class="form-control">
+                <label class="label" for="status">
+                  <span class="label-text">Estado</span>
+                </label>
+                <select
+                  class="select select-bordered"
+                  id="status"
+                  name="status"
+                >
+                  <option value="Ongoing" selected={manga.status === "Ongoing"}>
+                    En emisión
+                  </option>
+                  <option
+                    value="Completed"
+                    selected={manga.status === "Completed"}
+                  >
+                    Completado
+                  </option>
+                  <option value="Hiatus" selected={manga.status === "Hiatus"}>
+                    En pausa
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-control mt-4">
+              <label class="label" for="chapters">
+                <span class="label-text">Número de capítulos</span>
+              </label>
+              <input
+                class="input input-bordered"
+                type="number"
+                id="chapters"
+                name="chapters"
+                min="1"
+                value={manga.chapters ?? ""}
+              />
+            </div>
+
+            <div class="form-control mt-4">
+              <label class="label" for="synopsis">
+                <span class="label-text">Sinopsis</span>
+              </label>
+              <textarea
+                class="textarea textarea-bordered"
+                id="synopsis"
+                name="synopsis"
+              >
+                {manga.synopsis ?? ""}
+              </textarea>
+            </div>
+
+            <div class="form-control mt-4">
+              <label class="label" for="imageUrl">
+                <span class="label-text">URL de imagen (portada)</span>
+              </label>
+              <input
+                class="input input-bordered"
+                type="url"
+                id="imageUrl"
+                name="imageUrl"
+                value={manga.imageUrl ?? ""}
+              />
+            </div>
+
+            <div class="flex gap-3 mt-6">
+              <button type="submit" class="btn btn-primary" id="submit-btn">
+                Guardar cambios
+              </button>
+              <a class="btn btn-ghost" href={`/manga/${manga.id}`}>
+                Cancelar
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    )
+  }
+</Layout>
+
+<script define:vars={{ mangaId: manga?.id }}>
+  const form = document.getElementById("edit-form");
+  const errorMsg = document.getElementById("error-msg");
+  const submitBtn = document.getElementById("submit-btn");
+
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorMsg.classList.add("hidden");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Guardando...";
+
+      const data = {
+        title: document.getElementById("title").value.trim(),
+        author: document.getElementById("author").value.trim(),
+        genre: document.getElementById("genre").value.trim() || null,
+        status: document.getElementById("status").value,
+        chapters: document.getElementById("chapters").value
+          ? Number(document.getElementById("chapters").value)
+          : null,
+        synopsis: document.getElementById("synopsis").value.trim() || null,
+        imageUrl: document.getElementById("imageUrl").value.trim() || null,
+      };
+
+      if (!data.title || !data.author) {
+        errorMsg.textContent = "El título y el autor son obligatorios.";
+        errorMsg.classList.remove("hidden");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Guardar cambios";
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/manga/${mangaId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        if (res.ok) {
+          window.location.href = `/manga/${mangaId}`;
+        } else {
+          errorMsg.textContent =
+            "Error al guardar los cambios. Inténtalo de nuevo.";
+          errorMsg.classList.remove("hidden");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Guardar cambios";
+        }
+      } catch {
+        errorMsg.textContent = "Error de conexión. ¿Está el backend corriendo?";
+        errorMsg.classList.remove("hidden");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Guardar cambios";
+      }
+    });
+  }
+</script>

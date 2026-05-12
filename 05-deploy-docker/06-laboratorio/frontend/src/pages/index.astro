@@ -1,0 +1,182 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const API_URL = import.meta.env.API_URL ?? "http://localhost:8080";
+
+const page = Number(Astro.url.searchParams.get("page") ?? "1");
+const pageSize = 10;
+
+interface MangaSeries {
+  id: number;
+  title: string;
+  author: string;
+  genre: string | null;
+  status: string;
+  chapters: number | null;
+  synopsis: string | null;
+  imageUrl: string | null;
+  createdAt: string;
+}
+
+interface PaginatedResponse {
+  data: MangaSeries[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+let result: PaginatedResponse = {
+  data: [],
+  total: 0,
+  page: 1,
+  pageSize,
+  totalPages: 0,
+};
+let error = "";
+
+try {
+  const response = await fetch(
+    `${API_URL}/api/manga?page=${page}&pageSize=${pageSize}`,
+  );
+  if (!response.ok) throw new Error(`Error ${response.status}`);
+  result = await response.json();
+} catch (e) {
+  error = "No se pudo conectar con la API. ¿Está el backend corriendo?";
+}
+
+function badgeClass(status: string) {
+  if (status === "Completed") return "badge badge-success badge-outline";
+  if (status === "Hiatus") return "badge badge-warning badge-outline";
+  return "badge badge-primary badge-outline";
+}
+
+function statusLabel(status: string) {
+  if (status === "Completed") return "Completado";
+  if (status === "Hiatus") return "En pausa";
+  return "En emisión";
+}
+---
+
+<Layout title="Catálogo">
+  <div
+    class="flex justify-between items-end mb-8 pb-4 border-b border-base-300"
+  >
+    <h1 class="font-display text-5xl tracking-widest">Catálogo de Manga</h1>
+    {
+      result.total > 0 && (
+        <span class="text-base-content/40 text-sm">{result.total} series</span>
+      )
+    }
+  </div>
+
+  {
+    error && (
+      <div role="alert" class="alert alert-error mb-6">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="stroke-current shrink-0 h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span>{error}</span>
+      </div>
+    )
+  }
+
+  {
+    result.data.length === 0 && !error && (
+      <div class="hero py-20">
+        <div class="hero-content text-center">
+          <div>
+            <p class="font-display text-6xl mb-4 text-base-content/20">空</p>
+            <p class="text-base-content/50 mb-4">No hay series todavía.</p>
+            <a href="/manga/create" class="btn btn-primary">
+              ¡Añade la primera!
+            </a>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  <div
+    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+  >
+    {
+      result.data.map((manga) => (
+        <article class="card bg-base-200 border border-base-300 hover:border-primary hover:-translate-y-1 transition-all duration-200 shadow-md hover:shadow-primary/20">
+          <div class="card-body p-5 gap-3">
+            <div class="flex justify-between items-start gap-2">
+              <h2 class="card-title font-display text-xl tracking-wide leading-tight">
+                {manga.title}
+              </h2>
+              <span class={badgeClass(manga.status)}>
+                {statusLabel(manga.status)}
+              </span>
+            </div>
+            <p class="text-base-content/50 text-sm">por {manga.author}</p>
+            {manga.genre && (
+              <p class="text-base-content/40 text-xs flex items-center gap-1">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                {manga.genre}
+                {manga.chapters ? ` · ${manga.chapters} caps.` : ""}
+              </p>
+            )}
+            {manga.synopsis && (
+              <p class="text-base-content/60 text-sm leading-relaxed line-clamp-3 flex-1">
+                {manga.synopsis}
+              </p>
+            )}
+            <div class="card-actions justify-end mt-2 pt-3 border-t border-base-300 gap-2">
+              <a
+                class="btn btn-ghost btn-xs flex-1 text-center"
+                href={`/manga/${manga.id}`}
+              >
+                Ver detalle
+              </a>
+              <a
+                class="btn btn-ghost btn-xs"
+                href={`/manga/${manga.id}/edit`}
+                title="Editar"
+              >
+                ✏️
+              </a>
+            </div>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+
+  {
+    result.totalPages > 1 && (
+      <div class="flex justify-center items-center gap-6 mt-12 pt-6 border-t border-base-300">
+        {page > 1 ? (
+          <a class="btn btn-outline btn-sm" href={`/?page=${page - 1}`}>
+            ← Anterior
+          </a>
+        ) : (
+          <span class="btn btn-outline btn-sm btn-disabled">← Anterior</span>
+        )}
+        <span class="font-display text-xl tracking-widest text-base-content/50">
+          Vol. {page} / {result.totalPages}
+        </span>
+        {page < result.totalPages ? (
+          <a class="btn btn-outline btn-sm" href={`/?page=${page + 1}`}>
+            Siguiente →
+          </a>
+        ) : (
+          <span class="btn btn-outline btn-sm btn-disabled">Siguiente →</span>
+        )}
+      </div>
+    )
+  }
+</Layout>

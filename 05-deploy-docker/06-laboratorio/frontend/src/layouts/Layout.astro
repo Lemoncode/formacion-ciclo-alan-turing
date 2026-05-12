@@ -1,0 +1,78 @@
+---
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es" data-theme="night">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bangers&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title} | MangaTracker</title>
+    <style is:global>
+      /* Override primary to manga crimson */
+      [data-theme="night"] {
+        --p: 354 74% 53%;
+        --pc: 0 0% 100%;
+      }
+      body {
+        background-image: radial-gradient(
+          circle,
+          oklch(25% 0 0) 1px,
+          transparent 1px
+        );
+        background-size: 26px 26px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .font-display {
+        font-family: "Bangers", cursive;
+      }
+      main {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <header
+      class="navbar bg-black border-b-4 border-primary shadow-lg sticky top-0 z-50 px-4"
+    >
+      <div class="navbar-start">
+        <a
+          href="/"
+          class="font-display text-3xl tracking-widest text-base-content flex items-center gap-2 no-underline hover:no-underline"
+        >
+          <span
+            class="text-primary border-2 border-primary px-1 text-xl leading-tight"
+            >漫</span
+          >
+          MangaTracker
+        </a>
+      </div>
+      <div class="navbar-end">
+        <a href="/manga/create" class="btn btn-primary btn-sm gap-1">
+          + Nueva serie
+        </a>
+      </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-10 max-w-7xl">
+      <slot />
+    </main>
+
+    <footer
+      class="footer footer-center p-4 bg-black text-base-content/30 text-xs border-t border-base-300"
+    >
+      <p>MangaTracker · Ejercicio Docker</p>
+    </footer>
+  </body>
+</html>
