@@ -1,7 +1,6 @@
 using MangaApi.Data;
 using MangaApi.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace MangaApi.Controllers;
 
@@ -9,25 +8,20 @@ namespace MangaApi.Controllers;
 [Route("api/manga")]
 public class MangaController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly MangaStore _store;
 
-    public MangaController(AppDbContext context)
+    public MangaController(MangaStore store)
     {
-        _context = context;
+        _store = store;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public IActionResult GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 10;
 
-        var total = await _context.MangaSeries.CountAsync();
-        var items = await _context.MangaSeries
-            .OrderByDescending(m => m.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        var (items, total) = _store.GetPaged(page, pageSize);
 
         return Ok(new
         {
@@ -40,49 +34,32 @@ public class MangaController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetById(int id)
+    public IActionResult GetById(int id)
     {
-        var manga = await _context.MangaSeries.FindAsync(id);
+        var manga = _store.GetById(id);
         if (manga is null) return NotFound(new { message = $"Serie con id {id} no encontrada." });
         return Ok(manga);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] MangaSeries manga)
+    public IActionResult Create([FromBody] MangaSeries manga)
     {
-        manga.Id = 0;
-        manga.CreatedAt = DateTime.UtcNow;
-        _context.MangaSeries.Add(manga);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = manga.Id }, manga);
+        var created = _store.Create(manga);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] MangaSeries manga)
+    public IActionResult Update(int id, [FromBody] MangaSeries manga)
     {
-        var existing = await _context.MangaSeries.FindAsync(id);
-        if (existing is null) return NotFound(new { message = $"Serie con id {id} no encontrada." });
-
-        existing.Title = manga.Title;
-        existing.Author = manga.Author;
-        existing.Genre = manga.Genre;
-        existing.Status = manga.Status;
-        existing.Chapters = manga.Chapters;
-        existing.Synopsis = manga.Synopsis;
-        existing.ImageUrl = manga.ImageUrl;
-
-        await _context.SaveChangesAsync();
-        return Ok(existing);
+        var updated = _store.Update(id, manga);
+        if (updated is null) return NotFound(new { message = $"Serie con id {id} no encontrada." });
+        return Ok(updated);
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
+    public IActionResult Delete(int id)
     {
-        var manga = await _context.MangaSeries.FindAsync(id);
-        if (manga is null) return NotFound(new { message = $"Serie con id {id} no encontrada." });
-
-        _context.MangaSeries.Remove(manga);
-        await _context.SaveChangesAsync();
+        if (!_store.Delete(id)) return NotFound(new { message = $"Serie con id {id} no encontrada." });
         return NoContent();
     }
 }
