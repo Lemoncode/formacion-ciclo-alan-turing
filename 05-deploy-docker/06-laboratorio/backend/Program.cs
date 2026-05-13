@@ -57,6 +57,8 @@ using (var scope = app.Services.CreateScope())
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MangaTracker API v1"));
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseCors();
 app.MapControllers();
 app.Run();

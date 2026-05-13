@@ -1,0 +1,172 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Detalle">
+  <a
+    href="/"
+    class="link link-hover text-base-content/50 text-sm flex items-center gap-1 mb-6"
+    >← Volver al catálogo</a
+  >
+
+  <div role="alert" class="alert alert-error mb-6 hidden" id="error-msg">
+    <span id="error-text"></span>
+  </div>
+
+  <div id="loading" class="flex justify-center py-20">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+  </div>
+
+  <div id="content" class="hidden">
+    <article
+      class="card bg-base-200 border border-base-300 border-t-4 border-t-primary shadow-xl max-w-3xl"
+    >
+      <div class="card-body gap-4">
+        <div class="flex justify-between items-start gap-3 flex-wrap">
+          <h1
+            id="title"
+            class="font-display text-5xl tracking-widest leading-none"
+          >
+          </h1>
+          <span id="badge" class="badge badge-outline"></span>
+        </div>
+        <p class="text-base-content/50">
+          por <strong id="author" class="text-base-content"></strong>
+        </p>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="meta-grid"></div>
+
+        <div id="synopsis-block" class="hidden">
+          <p
+            class="text-xs font-bold uppercase tracking-widest text-base-content/40 mb-2"
+          >
+            Sinopsis
+          </p>
+          <p id="synopsis" class="text-base-content/70 leading-relaxed"></p>
+        </div>
+
+        <img
+          id="cover"
+          src=""
+          alt=""
+          class="rounded-lg border border-base-300 max-w-[200px] hidden"
+        />
+
+        <div class="card-actions mt-2 pt-4 border-t border-base-300 gap-3">
+          <a id="edit-link" href="#" class="btn btn-outline btn-sm">✏️ Editar</a
+          >
+          <button class="btn btn-error btn-outline btn-sm" id="delete-btn"
+            >🗑️ Eliminar</button
+          >
+        </div>
+      </div>
+    </article>
+  </div>
+</Layout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const mangaId = params.get("id");
+
+  if (!mangaId) {
+    window.location.href = "/";
+  }
+
+  function badgeClass(status: string) {
+    if (status === "Completed") return "badge badge-success badge-outline";
+    if (status === "Hiatus") return "badge badge-warning badge-outline";
+    return "badge badge-primary badge-outline";
+  }
+
+  const statusLabel: Record<string, string> = {
+    Ongoing: "En emisión",
+    Completed: "Completado",
+    Hiatus: "En pausa",
+  };
+
+  async function load() {
+    const loading = document.getElementById("loading")!;
+    const content = document.getElementById("content")!;
+    const errorMsg = document.getElementById("error-msg")!;
+    const errorText = document.getElementById("error-text")!;
+
+    try {
+      const res = await fetch(`/api/manga/${mangaId}`);
+      if (res.status === 404) {
+        window.location.href = "/";
+        return;
+      }
+      if (!res.ok) throw new Error();
+      const manga = await res.json();
+
+      document.title = `${manga.title} | MangaTracker`;
+      (document.getElementById("title") as HTMLElement).textContent =
+        manga.title;
+      (document.getElementById("author") as HTMLElement).textContent =
+        manga.author;
+
+      const badge = document.getElementById("badge")!;
+      badge.className = badgeClass(manga.status);
+      badge.textContent = statusLabel[manga.status] ?? manga.status;
+
+      const metaGrid = document.getElementById("meta-grid")!;
+      const metas = [];
+      if (manga.genre)
+        metas.push(
+          `<div class="stat bg-base-300 rounded-box p-3"><div class="stat-title text-xs">Género</div><div class="stat-value text-base font-semibold">${manga.genre}</div></div>`,
+        );
+      if (manga.chapters)
+        metas.push(
+          `<div class="stat bg-base-300 rounded-box p-3"><div class="stat-title text-xs">Capítulos</div><div class="stat-value text-base font-semibold">${manga.chapters}</div></div>`,
+        );
+      metas.push(
+        `<div class="stat bg-base-300 rounded-box p-3"><div class="stat-title text-xs">Añadida el</div><div class="stat-value text-base font-semibold">${new Date(manga.createdAt).toLocaleDateString("es-ES")}</div></div>`,
+      );
+      metaGrid.innerHTML = metas.join("");
+
+      if (manga.synopsis) {
+        (document.getElementById("synopsis") as HTMLElement).textContent =
+          manga.synopsis;
+        document.getElementById("synopsis-block")!.classList.remove("hidden");
+      }
+
+      if (manga.imageUrl) {
+        const img = document.getElementById("cover") as HTMLImageElement;
+        img.src = manga.imageUrl;
+        img.alt = manga.title;
+        img.classList.remove("hidden");
+      }
+
+      (document.getElementById("edit-link") as HTMLAnchorElement).href =
+        `/manga/edit?id=${manga.id}`;
+
+      loading.classList.add("hidden");
+      content.classList.remove("hidden");
+    } catch {
+      loading.classList.add("hidden");
+      errorText.textContent = "No se pudo cargar la serie.";
+      errorMsg.classList.remove("hidden");
+    }
+  }
+
+  load();
+
+  document.getElementById("delete-btn")!.addEventListener("click", async () => {
+    if (
+      !confirm(
+        "¿Seguro que quieres eliminar esta serie? Esta acción no se puede deshacer.",
+      )
+    )
+      return;
+    try {
+      const res = await fetch(`/api/manga/${mangaId}`, { method: "DELETE" });
+      if (res.ok) {
+        window.location.href = "/";
+      } else {
+        alert("Error al eliminar la serie.");
+      }
+    } catch {
+      alert("Error de conexión al eliminar.");
+    }
+  });
+</script>

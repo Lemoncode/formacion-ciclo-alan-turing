@@ -5,11 +5,15 @@
 Eres el DevOps del equipo. Los desarrolladores te han entregado **MangaTracker**, una app fullstack para gestionar un catálogo de series manga:
 
 - El **backend** es una API REST con **.NET 8** y **PostgreSQL**.
-- El **frontend** es una web con **Astro** (modo SSR con adaptador Node.js).
+- El **frontend** es una web con **Astro** compilada a HTML/CSS/JS estático.
 
-Ambas apps están terminadas y funcionan en local. Tu trabajo es **escribir los `Dockerfile`** para empaquetar cada una en una imagen Docker lista para producción.
+Ambas apps están terminadas y funcionan en local. Tu trabajo es **escribir un único `Dockerfile`** (en `backend/`) que:
 
-La base de datos ya corre en un contenedor PostgreSQL que se levanta vía el `docker-compose.yml` raíz del laboratorio. Tú no tienes que dockerizar la base de datos.
+1. Compile el frontend Astro en archivos estáticos.
+2. Compile y publique el backend .NET.
+3. Produzca una imagen final donde el servidor .NET (Kestrel) sirva tanto la API como los archivos estáticos del frontend.
+
+Así, en producción solo hay **dos contenedores**: la base de datos y el backend (que hace de servidor web también).
 
 ---
 
@@ -23,23 +27,31 @@ La base de datos ya corre en un contenedor PostgreSQL que se levanta vía el `do
 │   ├── Controllers/
 │   ├── Data/
 │   ├── Models/
+│   ├── wwwroot/                ← aquí irán los archivos estáticos del frontend
 │   ├── MangaApi.csproj
 │   ├── Program.cs
 │   └── appsettings.json
-└── frontend/                   ← App Astro SSR — ESCRIBE AQUÍ EL Dockerfile
+└── frontend/                   ← App Astro estática (sin Dockerfile propio)
     ├── src/
     ├── astro.config.ts
-    ├── package.json
-    └── .env.example
+    └── package.json
 ```
 
 ---
 
 ## Tu misión
 
-Crea un `Dockerfile` dentro de `backend/` y otro dentro de `frontend/`.
+Crea un `Dockerfile` dentro de `backend/` con **tres etapas**:
 
-Cuando ambos Dockerfiles estén escritos, deberías poder ejecutar desde la raíz del laboratorio:
+| Etapa | Imagen base                           | Qué hace                                                                  |
+| ----- | ------------------------------------- | ------------------------------------------------------------------------- |
+| 1     | `node:20-alpine`                      | Instala deps del frontend y ejecuta `npm run build`                       |
+| 2     | `mcr.microsoft.com/dotnet/sdk:8.0`    | Restaura deps y publica el backend en modo Release                        |
+| 3     | `mcr.microsoft.com/dotnet/aspnet:8.0` | Imagen final: copia el binario .NET + el `dist/` de Astro como `wwwroot/` |
+
+El contexto de build de Docker es la **raíz del laboratorio** (`06-laboratorio/`), por lo que puedes acceder tanto a `frontend/` como a `backend/` desde el Dockerfile.
+
+Cuando el Dockerfile esté escrito, deberías poder ejecutar desde la raíz del laboratorio:
 
 ```bash
 docker compose up --build
@@ -47,40 +59,40 @@ docker compose up --build
 
 Y tener la aplicación completa funcionando:
 
-- Frontend → [http://localhost:4321](http://localhost:4321)
-- Backend (API) → [http://localhost:8080/api/manga](http://localhost:8080/api/manga)
+- Frontend + API → [http://localhost:8080](http://localhost:8080)
 - Swagger → [http://localhost:8080/swagger](http://localhost:8080/swagger)
 
 ---
 
 ## Lo que debes averiguar (sin respuestas aquí)
 
-### Para el backend (.NET 8)
+### Para compilar el frontend (etapa Node)
+
+- El contexto del Dockerfile es la raíz `06-laboratorio/`. ¿Cómo copias los ficheros de `frontend/`?
+- ¿Cuál es la diferencia entre `npm install` y `npm ci`? ¿Cuál deberías usar en un Dockerfile?
+- El comando `npm run build` genera archivos estáticos en `./dist/`. ¿Cómo los copias a la etapa final?
+
+### Para compilar el backend .NET (etapa SDK)
 
 - ¿Qué imagen base oficial de Microsoft necesitas para **compilar** una app .NET 8?
 - ¿Y para **ejecutar** el artefacto ya compilado? (Pista: no necesitas el SDK completo en producción.)
 - ¿Qué comando de `dotnet` restaura dependencias, compila y publica la app en modo Release?
 - ¿En qué carpeta deja el artefacto publicado y cómo lo copias a la imagen final?
-- ¿Qué puerto usa .NET por defecto en Docker? (Revisa `ASPNETCORE_URLS` en el `docker-compose.yml`.)
+
+### Para la imagen final (etapa ASP.NET runtime)
+
+- ¿Cómo copias los archivos estáticos del frontend a `./wwwroot/` dentro de la imagen?
+- ¿Qué puerto usa .NET? Revisa `ASPNETCORE_URLS` en el `docker-compose.yml`.
 - ¿Cómo arrancas la aplicación? El binario principal se llama `MangaApi.dll`.
-
-### Para el frontend (Astro SSR + Node.js)
-
-- Astro necesita Node.js para compilarse **y** para ejecutarse. ¿Qué imagen Alpine de Node.js tiene sentido usar?
-- ¿Cuál es la diferencia entre `npm install` y `npm ci`? ¿Cuál deberías usar en un Dockerfile?
-- El comando `npm run build` genera el servidor en `./dist/server/entry.mjs`. ¿Cómo lo arrancas?
-- El adaptador Node.js de Astro necesita las variables de entorno `HOST` y `PORT` en tiempo de ejecución. Revisa el `docker-compose.yml` para saber qué valores establecer.
-- ¿Tiene sentido incluir `node_modules` en la imagen final usando multi-stage build?
+- El backend tiene `UseDefaultFiles()` y `UseStaticFiles()` configurados: sirve automáticamente `wwwroot/index.html` cuando accedes a `/`.
 
 ---
 
-## Requisitos de los Dockerfiles
+## Requisitos del Dockerfile
 
-- **Multi-stage build** obligatorio en ambos casos: una etapa para compilar, otra limpia para ejecutar.
-- Las imágenes de producción deben ser lo más ligeras posible (usa variantes `alpine` cuando puedas).
-- No copies ficheros innecesarios a la imagen final (código fuente, herramientas de desarrollo, tests...).
+- **Multi-stage build** de tres etapas: Node (frontend) → .NET SDK (backend) → ASP.NET runtime.
+- La imagen final solo contiene el binario compilado y los archivos estáticos: sin código fuente, sin SDK, sin `node_modules`.
 - El `EXPOSE` debe reflejar el puerto real en el que escucha el proceso.
-- Cada imagen debe arrancar sola con `docker run` sin parámetros adicionales (salvo las variables de entorno).
 
 ---
 
@@ -112,23 +124,22 @@ dotnet run
 
 ```bash
 cd frontend
-cp .env.example .env
 npm install
 npm run dev
-# Frontend disponible en http://localhost:4321
+# Frontend disponible en http://localhost:4321 (habla con el backend en localhost:8080)
 ```
 
 ---
 
 ## Criterios de evaluación
 
-| Criterio                                                         | Puntos |
-| ---------------------------------------------------------------- | ------ |
-| Dockerfile backend funciona y arranca la API                     | 30     |
-| Dockerfile frontend funciona y sirve la web                      | 30     |
-| Multi-stage build aplicado correctamente en ambos                | 20     |
-| Imágenes finales sin código fuente ni dependencias de desarrollo | 10     |
-| `docker compose up --build` levanta todo sin errores             | 10     |
+| Criterio                                                      | Puntos |
+| ------------------------------------------------------------- | ------ |
+| Dockerfile backend funciona y arranca la API                  | 25     |
+| El frontend compilado queda en `wwwroot/` dentro de la imagen | 25     |
+| Multi-stage build de 3 etapas aplicado correctamente          | 20     |
+| Imagen final sin código fuente ni dependencias de desarrollo  | 20     |
+| `docker compose up --build` levanta todo sin errores          | 10     |
 
 ---
 
@@ -158,12 +169,12 @@ ENTRYPOINT ["dotnet", "MangaApi.dll"]
 </details>
 
 <details>
-<summary>🔴 Pista 3 — Arrancar Astro en Docker</summary>
+<summary>🔴 Pista 3 — Copiar el frontend a wwwroot</summary>
 
 ```dockerfile
-CMD ["node", "./dist/server/entry.mjs"]
+COPY --from=frontend-build /frontend/dist ./wwwroot
 ```
 
-El servidor necesita `ENV HOST=0.0.0.0` para aceptar conexiones desde fuera del contenedor.
+Kestrel servirá automáticamente estos archivos gracias a `UseStaticFiles()` y `UseDefaultFiles()` en `Program.cs`.
 
 </details>

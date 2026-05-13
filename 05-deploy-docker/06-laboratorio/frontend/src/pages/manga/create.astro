@@ -172,7 +172,7 @@ import Layout from "../../layouts/Layout.astro";
 
       if (res.ok) {
         const created = await res.json();
-        window.location.href = `/manga/${created.id}`;
+        window.location.href = `/manga/detail?id=${created.id}`;
       } else {
         errorMsg.textContent = "Error al crear la serie. Inténtalo de nuevo.";
         errorMsg.classList.remove("hidden");
