@@ -7,7 +7,7 @@ Eres el DevOps del equipo. Los desarrolladores te han entregado **MangaTracker**
 - El **backend** es una API REST con **.NET 8** que almacena los datos **en memoria** (sin base de datos).
 - El **frontend** es una web con **Astro** compilada a HTML/CSS/JS estático.
 
-Ambas apps están terminadas y funcionan en local. Tu trabajo es **escribir un único `Dockerfile`** (en `backend/`) que:
+Ambas apps están terminadas y funcionan en local. Tu trabajo es **escribir un único `Dockerfile`** en la **raíz del laboratorio** que:
 
 1. Compile el frontend Astro en archivos estáticos.
 2. Compile y publique el backend .NET.
@@ -22,7 +22,8 @@ Así, en producción solo hay **un contenedor** que lo hace todo.
 ```
 06-laboratorio/
 ├── 00-enunciado.md
-├── backend/                    ← API .NET 8 — ESCRIBE AQUÍ EL Dockerfile
+├── Dockerfile                  ← ESCRIBE AQUÍ EL Dockerfile
+├── backend/                    ← API .NET 8
 │   ├── Controllers/
 │   ├── Data/
 │   ├── Models/
@@ -40,15 +41,13 @@ Así, en producción solo hay **un contenedor** que lo hace todo.
 
 ## Tu misión
 
-Crea un `Dockerfile` dentro de `backend/` con **tres etapas**:
+Crea el `Dockerfile` en la raíz del laboratorio con **tres etapas**:
 
-| Etapa | Imagen base                           | Qué hace                                                                  |
-| ----- | ------------------------------------- | ------------------------------------------------------------------------- |
-| 1     | `node:24-alpine`                      | Instala deps del frontend y ejecuta `npm run build`                       |
-| 2     | `mcr.microsoft.com/dotnet/sdk:8.0`    | Restaura deps y publica el backend en modo Release                        |
-| 3     | `mcr.microsoft.com/dotnet/aspnet:8.0` | Imagen final: copia el binario .NET + el `dist/` de Astro como `wwwroot/` |
-
-El contexto de build de Docker es la **raíz del laboratorio** (`06-laboratorio/`), por lo que puedes acceder tanto a `frontend/` como a `backend/` desde el Dockerfile.
+| Etapa | Imagen base                        | Qué hace                                                                  |
+| ----- | ---------------------------------- | ------------------------------------------------------------------------- |
+| 1     | `node:24-alpine`                   | Instala deps del frontend y ejecuta `npm run build`                       |
+| 2     | `mcr.microsoft.com/dotnet/sdk:8.0` | Compila y publica el backend en modo Release                              |
+| 3     | `mcr.microsoft.com/dotnet/sdk:8.0` | Imagen final: copia el binario .NET + el `dist/` de Astro como `wwwroot/` |
 
 ---
 
@@ -72,7 +71,6 @@ El contexto de build de Docker es la **raíz del laboratorio** (`06-laboratorio/
 
 - ¿Cómo copias los archivos estáticos del frontend a `./wwwroot/` dentro de la imagen?
 - ¿Cómo arrancas la aplicación con `CMD`? El binario principal se llama `MangaApi.dll`.
-- El backend tiene `UseDefaultFiles()` y `UseStaticFiles()` configurados: sirve automáticamente `wwwroot/index.html` cuando accedes a `/`.
 
 ---
 
@@ -121,27 +119,39 @@ docker stop manga-tracker
 
 ## Pistas
 
-### Pista 1 — Imágenes base para .NET
+### Pista 1 — Imagen base para .NET
 
-Las imágenes oficiales de Microsoft para .NET 8 en Docker Hub son:
+La imagen oficial de Microsoft para .NET 8 (compilar y ejecutar) es:
 
-- Para compilar: `mcr.microsoft.com/dotnet/sdk:8.0`
+- `mcr.microsoft.com/dotnet/sdk:8.0`
+
+Puedes reutilizarla en la etapa intermedia y en la imagen final con un alias:
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
+```
 
 ### Pista 2 — Cómo compilar .NET
 
+Usa una ruta relativa en `-o` para que el artefacto quede dentro del `WORKDIR`:
+
 ```dockerfile
-RUN dotnet publish -c Release -o /out
+RUN dotnet publish -c Release -o out
 ```
 
-### Pista 3 - Cómo ejecutar un servidor de .NET
+### Pista 3 — Cómo arrancar el servidor .NET
 
 ```dockerfile
 CMD ["dotnet", "MangaApi.dll"]
 ```
 
-### Pista 4 — Donde copiar los archivos estáticos del frontend
+### Pista 4 — Dónde copiar los archivos estáticos del frontend
 
-Copiamos los archivos estáticos del frontend a `wwwroot/` dentro de la imagen final.
+Copia el resultado del build de Astro (`dist/`) a `wwwroot/` dentro de la imagen final:
+
+```dockerfile
+COPY --from=build-frontend /usr/app/dist ./wwwroot
+```
 
 ---
 
