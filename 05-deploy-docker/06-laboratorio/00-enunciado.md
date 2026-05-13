@@ -54,7 +54,7 @@ El contexto de build de Docker es la **raíz del laboratorio** (`06-laboratorio/
 Cuando el Dockerfile esté escrito, deberías poder ejecutar desde la raíz del laboratorio:
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 
 Y tener la aplicación completa funcionando:
