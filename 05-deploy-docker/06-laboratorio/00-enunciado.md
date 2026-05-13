@@ -71,6 +71,7 @@ Y tener la aplicación completa funcionando:
 - El contexto del Dockerfile es la raíz `06-laboratorio/`. ¿Cómo copias los ficheros de `frontend/`?
 - ¿Cuál es la diferencia entre `npm install` y `npm ci`? ¿Cuál deberías usar en un Dockerfile?
 - El comando `npm run build` genera archivos estáticos en `./dist/`. ¿Cómo los copias a la etapa final?
+- El directorio `src/pages/api/` contiene rutas que actúan como proxy hacia el backend durante el desarrollo local (cuando el frontend corre en el puerto 4321 y el backend en el 8080). En Docker ambos conviven en el mismo servidor, así que ese proxy no tiene sentido y además rompe el build estático. ¿Cómo lo eliminas dentro del Dockerfile antes de ejecutar `npm run build`?
 
 ### Para compilar el backend .NET (etapa SDK)
 
@@ -131,34 +132,16 @@ npm run dev
 
 ---
 
-## Criterios de evaluación
+## Pistas
 
-| Criterio                                                      | Puntos |
-| ------------------------------------------------------------- | ------ |
-| Dockerfile backend funciona y arranca la API                  | 25     |
-| El frontend compilado queda en `wwwroot/` dentro de la imagen | 25     |
-| Multi-stage build de 3 etapas aplicado correctamente          | 20     |
-| Imagen final sin código fuente ni dependencias de desarrollo  | 20     |
-| `docker compose up --build` levanta todo sin errores          | 10     |
-
----
-
-## Pistas de urgencia
-
-> Descomenta solo si estás bloqueado más de 30 minutos en un punto concreto.
-
-<details>
-<summary>🔴 Pista 1 — Imágenes base para .NET</summary>
+### Pista 1 — Imágenes base para .NET
 
 Las imágenes oficiales de Microsoft para .NET 8 en Docker Hub son:
 
 - Para compilar: `mcr.microsoft.com/dotnet/sdk:8.0`
 - Para ejecutar: `mcr.microsoft.com/dotnet/aspnet:8.0`
 
-</details>
-
-<details>
-<summary>🔴 Pista 2 — Publicar y ejecutar .NET</summary>
+### Pista 2 — Publicar y ejecutar .NET
 
 ```dockerfile
 RUN dotnet publish -c Release -o /out
@@ -166,10 +149,7 @@ RUN dotnet publish -c Release -o /out
 ENTRYPOINT ["dotnet", "MangaApi.dll"]
 ```
 
-</details>
-
-<details>
-<summary>🔴 Pista 3 — Copiar el frontend a wwwroot</summary>
+### Pista 3 — Copiar el frontend a wwwroot
 
 ```dockerfile
 COPY --from=frontend-build /frontend/dist ./wwwroot
@@ -177,4 +157,13 @@ COPY --from=frontend-build /frontend/dist ./wwwroot
 
 Kestrel servirá automáticamente estos archivos gracias a `UseStaticFiles()` y `UseDefaultFiles()` en `Program.cs`.
 
-</details>
+### Pista 4 — Eliminar las rutas proxy antes del build
+
+El frontend incluye `src/pages/api/` con rutas que redirigen peticiones al backend durante el desarrollo local. Astro en modo estático (`output: 'static'`) no puede compilar rutas dinámicas como `[id].ts` sin `getStaticPaths()`, lo que provoca un error de build.
+
+En Docker no necesitas ese proxy: el .NET sirve `/api/manga` directamente. Elimina esa carpeta dentro de la etapa Node antes de ejecutar `npm run build`:
+
+```dockerfile
+RUN rm -rf src/pages/api
+RUN npm run build
+```
