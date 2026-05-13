@@ -1,0 +1,189 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Nueva serie">
+  <a
+    href="/"
+    class="link link-hover text-base-content/50 text-sm flex items-center gap-1 mb-6"
+    >← Volver al catálogo</a
+  >
+  <h1 class="font-display text-4xl tracking-widest mb-6">Nueva serie</h1>
+
+  <div role="alert" class="alert alert-error mb-4 hidden" id="error-msg"></div>
+
+  <div class="card bg-base-200 border border-base-300 max-w-2xl">
+    <div class="card-body">
+      <form id="create-form" novalidate>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="form-control">
+            <label class="label" for="title"
+              ><span class="label-text">Título *</span></label
+            >
+            <input
+              class="input input-bordered"
+              type="text"
+              id="title"
+              name="title"
+              required
+              placeholder="Ej: Berserk"
+            />
+          </div>
+          <div class="form-control">
+            <label class="label" for="author"
+              ><span class="label-text">Autor *</span></label
+            >
+            <input
+              class="input input-bordered"
+              type="text"
+              id="author"
+              name="author"
+              required
+              placeholder="Ej: Kentaro Miura"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <div class="form-control">
+            <label class="label" for="genre"
+              ><span class="label-text">Género</span></label
+            >
+            <input
+              class="input input-bordered"
+              type="text"
+              id="genre"
+              name="genre"
+              placeholder="Ej: Dark Fantasy"
+            />
+          </div>
+          <div class="form-control">
+            <label class="label" for="status"
+              ><span class="label-text">Estado</span></label
+            >
+            <select class="select select-bordered" id="status" name="status">
+              <option value="Ongoing">En emisión</option>
+              <option value="Completed">Completado</option>
+              <option value="Hiatus">En pausa</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-control mt-4">
+          <label class="label" for="chapters"
+            ><span class="label-text">Número de capítulos</span></label
+          >
+          <input
+            class="input input-bordered"
+            type="number"
+            id="chapters"
+            name="chapters"
+            min="1"
+            placeholder="Ej: 374"
+          />
+        </div>
+
+        <div class="form-control mt-4">
+          <label class="label" for="synopsis"
+            ><span class="label-text">Sinopsis</span></label
+          >
+          <textarea
+            class="textarea textarea-bordered"
+            id="synopsis"
+            name="synopsis"
+            placeholder="Breve descripción de la serie..."></textarea>
+        </div>
+
+        <div class="form-control mt-4">
+          <label class="label" for="imageUrl"
+            ><span class="label-text">URL de imagen (portada)</span></label
+          >
+          <input
+            class="input input-bordered"
+            type="url"
+            id="imageUrl"
+            name="imageUrl"
+            placeholder="https://..."
+          />
+        </div>
+
+        <div class="flex gap-3 mt-6">
+          <button type="submit" class="btn btn-primary" id="submit-btn"
+            >Guardar serie</button
+          >
+          <a class="btn btn-ghost" href="/">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const form = document.getElementById("create-form") as HTMLFormElement;
+  const errorMsg = document.getElementById("error-msg") as HTMLDivElement;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorMsg.classList.add("hidden");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Guardando...";
+
+    const data = {
+      title: (
+        document.getElementById("title") as HTMLInputElement
+      ).value.trim(),
+      author: (
+        document.getElementById("author") as HTMLInputElement
+      ).value.trim(),
+      genre:
+        (document.getElementById("genre") as HTMLInputElement).value.trim() ||
+        null,
+      status: (document.getElementById("status") as HTMLSelectElement).value,
+      chapters: (document.getElementById("chapters") as HTMLInputElement).value
+        ? Number(
+            (document.getElementById("chapters") as HTMLInputElement).value,
+          )
+        : null,
+      synopsis:
+        (
+          document.getElementById("synopsis") as HTMLTextAreaElement
+        ).value.trim() || null,
+      imageUrl:
+        (
+          document.getElementById("imageUrl") as HTMLInputElement
+        ).value.trim() || null,
+    };
+
+    if (!data.title || !data.author) {
+      errorMsg.textContent = "El título y el autor son obligatorios.";
+      errorMsg.classList.remove("hidden");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Guardar serie";
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/manga", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        const created = await res.json();
+        window.location.href = `/manga/detail?id=${created.id}`;
+      } else {
+        errorMsg.textContent = "Error al crear la serie. Inténtalo de nuevo.";
+        errorMsg.classList.remove("hidden");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Guardar serie";
+      }
+    } catch {
+      errorMsg.textContent = "Error de conexión. ¿Está el backend corriendo?";
+      errorMsg.classList.remove("hidden");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Guardar serie";
+    }
+  });
+</script>

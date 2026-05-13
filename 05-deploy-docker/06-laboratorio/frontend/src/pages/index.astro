@@ -1,0 +1,189 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Catálogo">
+  <div
+    class="flex justify-between items-end mb-8 pb-4 border-b border-base-300"
+  >
+    <h1 class="font-display text-5xl tracking-widest">Catálogo de Manga</h1>
+    <span id="total-count" class="text-base-content/40 text-sm"></span>
+  </div>
+
+  <div role="alert" class="alert alert-error mb-6 hidden" id="error-msg">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="stroke-current shrink-0 h-6 w-6"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+      ></path>
+    </svg>
+    <span id="error-text"></span>
+  </div>
+
+  <div id="empty-state" class="hero py-20 hidden">
+    <div class="hero-content text-center">
+      <div>
+        <p class="font-display text-6xl mb-4 text-base-content/20">空</p>
+        <p class="text-base-content/50 mb-4">No hay series todavía.</p>
+        <a href="/manga/create" class="btn btn-primary">¡Añade la primera!</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="loading" class="flex justify-center py-20">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+  </div>
+
+  <div
+    id="grid"
+    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+    style="display:none"
+  >
+  </div>
+
+  <div
+    id="pagination"
+    class="flex justify-center items-center gap-6 mt-12 pt-6 border-t border-base-300"
+    style="display:none"
+  >
+  </div>
+</Layout>
+
+<script>
+  // @ts-nocheck
+  const API_BASE = "/api/manga";
+
+  function badgeClass(status) {
+    if (status === "Completed") return "badge badge-success badge-outline";
+    if (status === "Hiatus") return "badge badge-warning badge-outline";
+    return "badge badge-primary badge-outline";
+  }
+
+  function statusLabel(status) {
+    if (status === "Completed") return "Completado";
+    if (status === "Hiatus") return "En pausa";
+    return "En emisión";
+  }
+
+  function genreLine(manga) {
+    if (!manga.genre) return "";
+    const caps = manga.chapters ? " · " + manga.chapters + " caps." : "";
+    return (
+      '<p class="text-base-content/40 text-xs flex items-center gap-1">' +
+      '<span class="inline-block w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>' +
+      manga.genre +
+      caps +
+      "</p>"
+    );
+  }
+
+  function synopsisLine(manga) {
+    if (!manga.synopsis) return "";
+    return (
+      '<p class="text-base-content/60 text-sm leading-relaxed line-clamp-3 flex-1">' +
+      manga.synopsis +
+      "</p>"
+    );
+  }
+
+  function cardHtml(manga) {
+    return (
+      '<article class="card bg-base-200 border border-base-300 hover:border-primary hover:-translate-y-1 transition-all duration-200 shadow-md hover:shadow-primary/20">' +
+      '<div class="card-body p-5 gap-3">' +
+      '<div class="flex justify-between items-start gap-2">' +
+      '<h2 class="card-title font-display text-xl tracking-wide leading-tight">' +
+      manga.title +
+      "</h2>" +
+      '<span class="' +
+      badgeClass(manga.status) +
+      '">' +
+      statusLabel(manga.status) +
+      "</span>" +
+      "</div>" +
+      '<p class="text-base-content/50 text-sm">por ' +
+      manga.author +
+      "</p>" +
+      genreLine(manga) +
+      synopsisLine(manga) +
+      '<div class="card-actions justify-end mt-2 pt-3 border-t border-base-300 gap-2">' +
+      '<a class="btn btn-ghost btn-xs flex-1 text-center" href="/manga/detail?id=' +
+      manga.id +
+      '">Ver detalle</a>' +
+      '<a class="btn btn-ghost btn-xs" href="/manga/edit?id=' +
+      manga.id +
+      '" title="Editar">✏️</a>' +
+      "</div></div></article>"
+    );
+  }
+
+  async function loadPage(page) {
+    var grid = document.getElementById("grid");
+    var pagination = document.getElementById("pagination");
+    var loading = document.getElementById("loading");
+    var errorMsg = document.getElementById("error-msg");
+    var errorText = document.getElementById("error-text");
+    var emptyState = document.getElementById("empty-state");
+    var totalCount = document.getElementById("total-count");
+
+    loading.classList.remove("hidden");
+    grid.style.display = "none";
+    pagination.style.display = "none";
+
+    try {
+      var res = await fetch(API_BASE + "?page=" + page + "&pageSize=10");
+      if (!res.ok) throw new Error("Error " + res.status);
+      var data = await res.json();
+
+      loading.classList.add("hidden");
+
+      if (data.data.length === 0) {
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      totalCount.textContent = data.total + " series";
+      grid.innerHTML = data.data.map(cardHtml).join("");
+      grid.style.display = "grid";
+
+      if (data.totalPages > 1) {
+        var prevBtn =
+          page > 1
+            ? '<a class="btn btn-outline btn-sm" href="/?page=' +
+              (page - 1) +
+              '">← Anterior</a>'
+            : '<span class="btn btn-outline btn-sm btn-disabled">← Anterior</span>';
+        var nextBtn =
+          page < data.totalPages
+            ? '<a class="btn btn-outline btn-sm" href="/?page=' +
+              (page + 1) +
+              '">Siguiente →</a>'
+            : '<span class="btn btn-outline btn-sm btn-disabled">Siguiente →</span>';
+        pagination.innerHTML =
+          prevBtn +
+          '<span class="font-display text-xl tracking-widest text-base-content/50">Vol. ' +
+          page +
+          " / " +
+          data.totalPages +
+          "</span>" +
+          nextBtn;
+        pagination.style.display = "flex";
+      }
+    } catch (_) {
+      loading.classList.add("hidden");
+      errorText.textContent =
+        "No se pudo conectar con la API. ¿Está el backend corriendo?";
+      errorMsg.classList.remove("hidden");
+    }
+  }
+
+  var params = new URLSearchParams(window.location.search);
+  var page = Number(params.get("page") || "1");
+  loadPage(page);
+</script>
